@@ -1,4 +1,4 @@
-import pygame, pickle
+import pygame
 import sys, random, time
 
 from src.Beat import RGB_Table, RED, BLACK, GREEN, BLUE, CYAN, YELLOW, MAGENTA, ORANGE, WHITE
