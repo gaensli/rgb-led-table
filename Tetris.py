@@ -1,109 +1,117 @@
 import pygame, pickle
 import sys, random, time
 
-from src.Beat import RGB_Table, RED, BLACK, WHITE, GREEN, BLUE, CYAN, YELLOW, MAGENTA
-
-
-class gamecolors:
-    BG_COLOR = BLACK
+from src.Beat import RGB_Table, RED, BLACK, GREEN, BLUE, CYAN, YELLOW, MAGENTA, ORANGE
 
 
 class tiles:
-    I_TILE = [[[1, 1, 1, 1]],
-              [[1],
-               [1],
-               [1],
-               [1]],
-              [[1, 1, 1, 1]],
-              [[1],
-               [1],
-               [1],
-               [1]],
-              CYAN]
-    J_TILE = [[[1, 0, 0],
-               [1, 1, 1]],
-              [[1, 1],
-               [1, 0],
-               [1, 0]],
-              [[1, 1, 1],
-               [0, 0, 1]],
-              [[0, 1],
-               [0, 1],
-               [1, 1]],
-              BLUE]
-    L_TILE = [[[0, 0, 1],
-               [1, 1, 1]],
-              [[1, 0],
-               [1, 0],
-               [1, 1]],
-              [[1, 1, 1],
-               [1, 0, 0]],
-              [[1, 1],
-               [0, 1],
-               [0, 1]],
-              [255, 80, 0]]
-    O_TILE = [[[1, 1],
-               [1, 1]],
-              [[1, 1],
-               [1, 1]],
-              [[1, 1],
-               [1, 1]],
-              [[1, 1],
-               [1, 1]],
-              YELLOW]
-    S_TILE = [[[0, 1, 1],
-               [1, 1, 0]],
-              [[1, 0],
-               [1, 1],
-               [0, 1]],
-              [[0, 1, 1],
-               [1, 1, 0]],
-              [[1, 0],
-               [1, 1],
-               [0, 1]],
-              GREEN]
-    T_TILE = [[[0, 1, 0],
-               [1, 1, 1]],
-              [[1, 0],
-               [1, 1],
-               [1, 0]],
-              [[1, 1, 1],
-               [0, 1, 0]],
-              [[0, 1],
-               [1, 1],
-               [0, 1]],
-              MAGENTA]
-    Z_TILE = [[[1, 1, 0],
-               [0, 1, 1]],
-              [[0, 1],
-               [1, 1],
-               [1, 0]],
-              [[1, 1, 0],
-               [0, 1, 1]],
-              [[0, 1],
-               [1, 1],
-               [1, 0]],
-              RED]
+    EMPTY_TILE = [
+        [[1]],
+        [[1]],
+        [[1]],
+        [[1]],
+        BLACK
+    ]
+    I_TILE = [
+        [[1, 1, 1, 1]],
+        [[1],
+         [1],
+         [1],
+         [1]],
+        [[1, 1, 1, 1]],
+        [[1],
+         [1],
+         [1],
+         [1]],
+        CYAN]
+    J_TILE = [
+        [[1, 0, 0],
+         [1, 1, 1]],
+        [[1, 1],
+         [1, 0],
+         [1, 0]],
+        [[1, 1, 1],
+         [0, 0, 1]],
+        [[0, 1],
+         [0, 1],
+         [1, 1]],
+        BLUE]
+    L_TILE = [
+        [[0, 0, 1],
+         [1, 1, 1]],
+        [[1, 0],
+         [1, 0],
+         [1, 1]],
+        [[1, 1, 1],
+         [1, 0, 0]],
+        [[1, 1],
+         [0, 1],
+         [0, 1]],
+        ORANGE]
+    O_TILE = [
+        [[1, 1],
+         [1, 1]],
+        [[1, 1],
+         [1, 1]],
+        [[1, 1],
+         [1, 1]],
+        [[1, 1],
+         [1, 1]],
+        YELLOW]
+    S_TILE = [
+        [[0, 1, 1],
+         [1, 1, 0]],
+        [[1, 0],
+         [1, 1],
+         [0, 1]],
+        [[0, 1, 1],
+         [1, 1, 0]],
+        [[1, 0],
+         [1, 1],
+         [0, 1]],
+        GREEN]
+    T_TILE = [
+        [[0, 1, 0],
+         [1, 1, 1]],
+        [[1, 0],
+         [1, 1],
+         [1, 0]],
+        [[1, 1, 1],
+         [0, 1, 0]],
+        [[0, 1],
+         [1, 1],
+         [0, 1]],
+        MAGENTA]
+    Z_TILE = [
+        [[1, 1, 0],
+         [0, 1, 1]],
+        [[0, 1],
+         [1, 1],
+         [1, 0]],
+        [[1, 1, 0],
+         [0, 1, 1]],
+        [[0, 1],
+         [1, 1],
+         [1, 0]],
+        RED]
 
 
 ####Global variables
 playerName = "Anon"
 hiScores = []
-rndSeq = []
-activeTet = ""
+activeTet = tiles.EMPTY_TILE
 activeTetCoords = [0, 0]
 activeTetRotation = 0
 level = 1
 linescleared = 0
 dropPoints = 0
-fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(26)]
+fixedPixels = [[BLACK] * 12 for _ in range(26)]
 keyPressTimeout = 125
 keyPressTime = 0
 keyTimeout = 150
 keyTime = 0
 moveTimeout = 500
 moveTime = 0
-brightness = 1.0
 Tetris_Points = 0
 running = False
 paused = False
@@ -124,39 +132,17 @@ def fadeInOut(rgb):
         display.show()
         display.wait()
 
-    display.fill(gamecolors.BG_COLOR)
-    display.brightness = 1.0
+    display.fill(BLACK)
     display.show()
-
-
-def shuffleSeq():
-    str_list = [tiles.I_TILE, tiles.O_TILE, tiles.T_TILE, tiles.S_TILE, tiles.Z_TILE, tiles.J_TILE, tiles.L_TILE]
-    random.shuffle(str_list)
-    return str_list
-
-
-def checkSpawn():
-    # Check if new spawned Tetromino overlaps the current fixedPixels
-    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
-    tempPixels = [[0 for x in range(12)] for x in range(26)]
-    for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][row])):
-            if activeTet[activeTetRotation][row][col]:
-                tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
-    for row in range(26):
-        for col in range(12):
-            if tempPixels[row][col] == 1:
-                if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                    return True
-    return False
+    display.brightness = 1.0
 
 
 def spawn():
-    global running, rndSeq, activeTet, activeTetRotation, activeTetCoords, dropPoints
-    if len(rndSeq) == 0:
-        rndSeq = shuffleSeq()
-    activeTet = rndSeq[0]
-    del rndSeq[0]
+    global running, activeTet, activeTetRotation, activeTetCoords, dropPoints
+    str_list = [tiles.I_TILE, tiles.O_TILE, tiles.T_TILE, tiles.S_TILE, tiles.Z_TILE, tiles.J_TILE, tiles.L_TILE]
+    random.shuffle(str_list)
+
+    activeTet = str_list[0]
     activeTetRotation = 0
     dropPoints = 0
     if activeTet == tiles.I_TILE:
@@ -177,7 +163,28 @@ def spawn():
         gameOver()
 
 
+def checkSpawn():
+    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
+    temp_pixels = [[0] * 12 for _ in range(26)]
+    for row in range(len(activeTet[activeTetRotation])):
+        for col in range(len(activeTet[activeTetRotation][row])):
+            temp_pixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
+
+    for row in range(26):
+        for col in range(12):
+            if temp_pixels[row][col]:
+                if fixedPixels[row][col] != BLACK:
+                    return True
+    return False
+
+
 def check_move_collision(direction:str):
+    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
+    temp_pixels = [[0] * 12 for _ in range(26)]
+    for row in range(len(activeTet[activeTetRotation])):
+        for col in range(len(activeTet[activeTetRotation][row])):
+            temp_pixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
+
     if direction == "left":
         edge = 0
         offset = -1
@@ -187,21 +194,49 @@ def check_move_collision(direction:str):
     else:
         raise ValueError("direction not recognized")
 
-    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
-
-    tempPixels = [[0 for x in range(12)] for x in range(26)]
-    for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][0])):
-            tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
-
-    for row in range(len(tempPixels)):
-        if tempPixels[row][edge]:
+    for row in range(26):
+        if temp_pixels[row][edge]:
             return True
-        for col in range(len(tempPixels[row])):
-            if tempPixels[row][col]:
-                if fixedPixels[row][col + offset] != gamecolors.BG_COLOR:
+        for col in range(12):
+            if temp_pixels[row][col]:
+                if fixedPixels[row][col + offset] != BLACK:
                     return True
 
+    return False
+
+
+def check_rotate_collision(cw: bool):
+    # cw i.e. clock-wise i.e. right turn
+    # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+    next_rotation = get_next_rotation(cw)
+
+    temp_pixels = [[0] * 12 for _ in range(26)]
+    for row in range(len(activeTet[next_rotation])):
+        for col in range(len(activeTet[next_rotation][row])):
+            temp_pixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 2 + col] = activeTet[next_rotation][row][col]
+
+    for row in range(26):
+        for col in range(12):
+            if temp_pixels[row][col]:
+                if fixedPixels[row][col] != BLACK:
+                    return True
+    return False
+
+
+def checkMoveDownCollision():
+    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
+    temp_pixels = [[0] * 12 for _ in range(27)]  # hib
+    for row in range(len(activeTet[activeTetRotation])):
+        for col in range(len(activeTet[activeTetRotation][row])):
+            temp_pixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
+    if any(temp_pixels[26]):
+        return True
+
+    for row in range(26):
+        for col in range(12):
+            if temp_pixels[row][col]:
+                if fixedPixels[row][col] != BLACK:
+                    return True
     return False
 
 
@@ -219,7 +254,7 @@ def move_side(direction:str):
 
 
 def gameOver():
-    global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, paused, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
+    global activeTet, activeTetCoords, activeTetRotation, fixedPixels, keyTimeout, keyTime, moveTimeout, moveTime, running, paused, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
 
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
@@ -238,21 +273,19 @@ def gameOver():
     pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
 
     # reset game for next round
-    rndSeq = []
-    activeTet = ""
+    activeTet = tiles.EMPTY_TILE
     activeTetCoords = [0, 0]
     activeTetRotation = 0
     linescleared = 0
     dropPoints = 0
     level = 1
-    fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
+    fixedPixels = [[BLACK for x in range(12)] for x in range(24)]
     keyPressTimeout = 150
     keyPressTime = 0
     keyTimeout = 100
     keyTime = 0
     moveTimeout = 200
     moveTime = 0
-    brightness = 1.0
     Tetris_Points = 0
     running = False
     paused = False
@@ -268,24 +301,6 @@ def get_next_rotation(cw: bool):
     return next_rotation_lookup[activeTetRotation]
 
 
-def check_no_collision(cw: bool):
-    # cw i.e. clock-wise i.e. right turn
-    # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
-    next_rotation = get_next_rotation(cw)
-
-    temp_pixels = [[0] * 12 for _ in range(26)]
-    for row in range(len(activeTet[next_rotation])):
-        for col in range(len(activeTet[next_rotation][0])):
-            if activeTet[next_rotation][row][col]:
-                temp_pixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 2 + col] = 1
-    for row in range(26):
-        for col in range(12):
-            if temp_pixels[row][col]:
-                if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                    return False
-    return True
-
-
 def rotate(cw: bool):
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
     next_rotation = get_next_rotation(cw)
@@ -296,28 +311,28 @@ def rotate(cw: bool):
         if activeTetRotation == 0:
             if activeTetCoords[0] > 23:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 2
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 1:
             if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 2
                 activeTetCoords[0] += 2
         elif activeTetRotation == 2:
             if activeTetCoords[0] > 24:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 2
         elif activeTetRotation == 3:
             if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
@@ -325,79 +340,32 @@ def rotate(cw: bool):
         if activeTetRotation == 0:
             if activeTetCoords[0] > 23:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 0
         elif activeTetRotation == 1:
             if activeTetCoords[1] < 1:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
         elif activeTetRotation == 2:
             if activeTetCoords[0] > 24:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 0
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 3:
             if activeTetCoords[1] > 7:
                 return
-            if check_no_collision(cw):
+            if not check_rotate_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 0
                 activeTetCoords[0] += 0
     snd_click.play()
-
-
-def keyAction(pressed_key):
-    global paused, keyPressTime
-
-    if pressed_key == "UP":
-        dropDown()
-    if pressed_key == "DOWN":
-        moveDown()
-        keyPressTime = pygame.time.get_ticks()
-    if pressed_key == "RIGHT":
-        if not check_move_collision(direction="right"):
-            move_side("right")
-        keyPressTime = pygame.time.get_ticks()
-    if pressed_key == "LEFT":
-        if not check_move_collision(direction="left"):
-            move_side("left")
-        keyPressTime = pygame.time.get_ticks()
-    if pressed_key == "A":
-        rotate(True)
-        keyPressTime = pygame.time.get_ticks()
-    if pressed_key == "B":
-        rotate(False)
-        keyPressTime = pygame.time.get_ticks()
-
-    if pressed_key == "START":
-        print("Game paused")
-        paused = True
-        pygame.mixer.music.pause()
-        snd_pause.play()
-    buildScreen()
-
-
-def checkMoveDownCollision():
-    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
-    tempPixels = [[0] * 12 for _ in range(27)]  # hib
-    for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][row])):
-            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
-    if any(tempPixels[26]):
-        return True
-    for row in range(26):
-        for col in range(12):
-            if tempPixels[row][col]:
-                if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                    return True
-    return False
 
 
 def setLevelAndSpeed(lines):
@@ -420,9 +388,9 @@ def checkFinishedLines():
     global fixedPixels, Tetris_Points, linescleared, level
     linesFinished = 0
     for row in range(26):
-        if all(map(lambda x: x != gamecolors.BG_COLOR, fixedPixels[row])):
+        if all(map(lambda x: x != BLACK, fixedPixels[row])):
             linesFinished += 1
-            fixedPixels[row] = [gamecolors.BG_COLOR] * 12
+            fixedPixels[row] = [BLACK] * 12
             buildScreen()
             for mrow in range(row, 0, -1):
                 fixedPixels[mrow] = fixedPixels[mrow - 1]
@@ -503,6 +471,37 @@ def getKeypress(joystick):
         key_pressed = "START"
 
     return key_pressed
+
+
+def keyAction(pressed_key):
+    global paused, keyPressTime
+
+    if pressed_key == "UP":
+        dropDown()
+    if pressed_key == "DOWN":
+        moveDown()
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "RIGHT":
+        if not check_move_collision(direction="right"):
+            move_side("right")
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "LEFT":
+        if not check_move_collision(direction="left"):
+            move_side("left")
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "A":
+        rotate(True)
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "B":
+        rotate(False)
+        keyPressTime = pygame.time.get_ticks()
+
+    if pressed_key == "START":
+        print("Game paused")
+        paused = True
+        pygame.mixer.music.pause()
+        snd_pause.play()
+    buildScreen()
 
 
 def buildScreen():
