@@ -396,19 +396,17 @@ def buildScreen():
     display.show()
 
 
-if __name__ == '__main__':
+def main():
+    global display, snd_click, snd_linekill, snd_tilefix, snd_level, moveTime, keyTime
     display = RGB_Table()
-
     print("Initialize sound system...", end=""),
     pygame.mixer.pre_init(44100, -16, 2, 2048)
     pygame.init()
     print("done!")
-
     print("Loading music...", end=""),
     pygame.mixer.music.load('/home/pi/rgb-led-table/sounds/tetrisaccapella.ogg')
     pygame.mixer.music.set_volume(0.4)
     print("done!")
-
     print("Loading SFX...", end=""),
     snd_click = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/click.ogg')
     snd_linekill = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/linekill.ogg')
@@ -417,24 +415,18 @@ if __name__ == '__main__':
     snd_gameover = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/gameover.ogg')
     snd_level = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/level.ogg')
     print("done!")
-
     pygame.mixer.music.play(-1)
-
     joystick_count = pygame.joystick.get_count()
     if joystick_count == 0:
         print("How do you want to play Tetris without a joystick?")
         sys.exit()
-
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
     print(f'Initialized Joystick : {joystick.get_name()}')
-
     print("Game of Tetris started!")
     fadeInOut([128, 128, 128])
-
     spawn()
     moveTime = keyTime = pygame.time.get_ticks()
-
     try:
         while True:
             key_press = getKeypress(joystick)
@@ -462,14 +454,17 @@ if __name__ == '__main__':
                 moveTime = pygame.time.get_ticks()
 
             buildScreen()
-            time.sleep(0.01)        # Throttle down CPU load...
+            time.sleep(0.01)  # Throttle down CPU load...
 
     except Exception as e:
         print(e)
-
     pygame.mixer.music.stop()
     snd_gameover.play()
     time.sleep(0.1)
     fadeInOut(RED)
     print(f"Game over! {Tetris_Points} points.")
     print("Tetris ended.")
+
+
+if __name__ == '__main__':
+    main()
