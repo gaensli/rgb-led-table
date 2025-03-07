@@ -13,6 +13,8 @@ class bcolors:
     ANSI_GREY = '\033[90m'
     ANSI_BLACK = '\033[90m'
     ENDC = '\033[0m'
+
+
 # os.system('cls' if os.name=='nt' else 'clear')
 
 
@@ -673,7 +675,7 @@ def keyAction():
     if lastPressed == "SELECT":
         print("Button 8 - Select button")
     if lastPressed == "START":
-        print ("Game paused")
+        print("Game paused")
         paused = True
         pygame.mixer.music.pause()
         snd_pause.play()
@@ -856,20 +858,21 @@ if __name__ == '__main__':
 
     joystick_count = pygame.joystick.get_count()
     if joystick_count == 0:
-        print ("How do you want to play Tetris without a joystick?")
+        print("How do you want to play Tetris without a joystick?")
         sys.exit()
     else:
         j = pygame.joystick.Joystick(0)
         j.init()
-        print 'Initialized Joystick : %s' % j.get_name()
+        print
+        'Initialized Joystick : %s' % j.get_name()
     print("Loading Hiscores..."),
-#    hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
-#    hiScores.sort(key=getKey, reverse=True)
+    #    hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
+    #    hiScores.sort(key=getKey, reverse=True)
     print("done")
-#    print("Aktueller Hiscore: " + str(hiScores[0][1]) + " Punkte von " + str(hiScores[0][0]))
-#    if len(sys.argv) > 1:
-#        playerName = sys.argv[1]
-#        print("Hi " + playerName + ", good luck!")
+    #    print("Aktueller Hiscore: " + str(hiScores[0][1]) + " Punkte von " + str(hiScores[0][0]))
+    #    if len(sys.argv) > 1:
+    #        playerName = sys.argv[1]
+    #        print("Hi " + playerName + ", good luck!")
     print("Game of Tetris started!")
     fadeInOut([255, 255, 255])
     running = True
@@ -883,7 +886,7 @@ if __name__ == '__main__':
             while paused:
                 pygame.event.pump()
                 if j.get_button(9):
-                    print ("Game unpaused")
+                    print("Game unpaused")
                     snd_pause.play()
                     pygame.mixer.music.unpause()
                     time.sleep(1)
