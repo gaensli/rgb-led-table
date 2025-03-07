@@ -153,30 +153,6 @@ def checkSpawn():
     return False
 
 
-def resetGame():
-    global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, movingPixels, displayPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
-    rndSeq = []
-    activeTet = ""
-    activeTetCoords = [0, 0]
-    activeTetRotation = 0
-    linescleared = 0
-    dropPoints = 0
-    level = 1
-    fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
-    movingPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
-    displayPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
-    keyPressTimeout = 150
-    keyPressTime = 0
-    keyTimeout = 100
-    keyTime = 0
-    moveTimeout = 200
-    moveTime = 0
-    brightness = 1.0
-    Tetris_Points = 0
-    running = False
-    paused = False
-
-
 def spawn():
     global running, rndSeq, activeTet, activeTetRotation, activeTetCoords, dropPoints
     if len(rndSeq) == 0:
@@ -201,7 +177,6 @@ def spawn():
         activeTetCoords = [2, 3]
     if checkSpawn():
         gameOver()
-        resetGame()
 
 
 def check_move_collision(direction:str):
@@ -249,6 +224,8 @@ def move_side(direction:str):
 
 
 def gameOver():
+    global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, paused, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
+
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
     snd_gameover.play()
@@ -264,6 +241,26 @@ def gameOver():
 
     hiScores.sort(key=getKey, reverse=True)
     pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
+
+    # reset game for next round
+    rndSeq = []
+    activeTet = ""
+    activeTetCoords = [0, 0]
+    activeTetRotation = 0
+    linescleared = 0
+    dropPoints = 0
+    level = 1
+    fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
+    keyPressTimeout = 150
+    keyPressTime = 0
+    keyTimeout = 100
+    keyTime = 0
+    moveTimeout = 200
+    moveTime = 0
+    brightness = 1.0
+    Tetris_Points = 0
+    running = False
+    paused = False
 
 
 def rotateLeft():
