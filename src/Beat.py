@@ -171,6 +171,7 @@ def rainbow_colors(display):
         display.show()
         display.wait()
 
+
 def rgb_decrease(display, step=1):
     for j in range(int(256 // step)):
         for i in range(len(display)):
@@ -287,9 +288,9 @@ def time_display(display):
                  [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1],    # x == 7
                  [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0]]    # x == 8
 
-    fg_color = (255, 30, 0)
+    fg_color = RED
     # fg_color = (255, 0, 0)
-    bg_color = (0, 0, 0)
+    bg_color = BLACK
 
     # TODO random color for digits and dots.
 
@@ -308,7 +309,7 @@ def time_display(display):
     display.wait()
 
 
-def fade_in(display, rgb = (255, 255, 255)):
+def fade_in(display, rgb=(255, 255, 255)):
     display.brightness = 0.0
     while display.brightness < 1:
         r = int(rgb[0] * display.brightness)
@@ -320,7 +321,7 @@ def fade_in(display, rgb = (255, 255, 255)):
         display.brightness += 0.01
 
 
-def fade_out(display, rgb = (255, 255, 255)):
+def fade_out(display, rgb=(255, 255, 255)):
     display._brightness = 1.0
 
     while display.brightness > 0:
@@ -349,14 +350,8 @@ def color_chase(display):
 
 def colorfade(display):
     h, s, v = 0.0, 1.0, 1.0
-
     while True:
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        h += 0.005
-        if h > 1:
-            h -= 1
-
-        rgb = round(r * 255, 0), round(g * 255, 0), round(b * 255, 0)
+        rgb = hsv2rgb(h, s, v)
         display.fill(rgb)
         display.show()
 
