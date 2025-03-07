@@ -19,23 +19,23 @@ class SimonSayGame:
         pygame.mixer.music.play(-1)
 
         sleeptime = 0.5
-        self.display.fill([0, 0, 0])
+        self.display.fill(BLACK)
         self.display.show()
         for color in ['yellow', 'red', 'green', 'blue']:
-            self.simon_show_color(display, color, True)
+            self.simon_show_color(color, True)
             time.sleep(sleeptime)
-            self.simon_show_color(display, color, False)
+            self.simon_show_color(color, False)
             time.sleep(sleeptime)
 
-        fade_in(display, [0, 255, 0])
-        self.display.fill([0, 0, 0])
+        fade_in(display, GREEN)
+        self.display.fill(BLACK)
 
     def simon_show_color(self, color: str, mode: bool):
         colors = {
-            'red': (255, 0, 0),
-            'green': (0, 255, 0),
-            'blue': (0, 0, 255),
-            'yellow': (255, 255, 0)
+            'red': RED,
+            'green': GREEN,
+            'blue': BLUE,
+            'yellow': YELLOW
         }
         blocks = {
             'yellow': [[5, 3], [5, 4], [5, 5], [5, 6],
@@ -58,7 +58,7 @@ class SimonSayGame:
 
         if color in blocks and color in colors:
             temp = blocks[color]
-            fg_color = colors[color] if mode else [0,0,0]
+            fg_color = colors[color] if mode else BLACK
         else:
             return
 
@@ -77,7 +77,7 @@ def correct_pixel_brightness(pixel):
 
 
 def filter_pixel(pixel, brightness):
-    output_pixel = [0, 0, 0]
+    output_pixel = [0] * 3
 
     def gamma(value):
         return int(pow(value / 255.0, 2.5) * 255.0)
@@ -90,21 +90,31 @@ def filter_pixel(pixel, brightness):
 
 
 def pixelStream(display, UDP, PORT):
-    FG = [255, 0, 0]
-    BG = [0, 0, 0]
-    udpBild = [[BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
-               [BG, BG, BG, FG, BG, BG, BG, BG, BG, BG],
-               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
-               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
-               [BG, BG, BG, FG, BG, BG, BG, FG, BG, BG],
-               [BG, BG, BG, BG, FG, FG, FG, BG, BG, BG],
-               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
-               [BG, BG, BG, BG, BG, FG, BG, FG, BG, BG],
-               [BG, BG, BG, BG, BG, FG, FG, FG, BG, BG],
-               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
+    FG = RED
+    BG = BLACK
+    udpBild = [
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, FG, FG, FG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, FG, FG, FG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, FG, FG, FG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, BG, BG, BG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, FG, FG, FG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, FG, FG, FG, FG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, FG, BG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, FG, FG, FG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+        [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+    ]
 
+    display.fill(BLACK)
     display.show_image(udpBild)
     time.sleep(2)
 
@@ -136,7 +146,7 @@ if __name__ == '__main__':
     game.simon_says()
 
     heart_beat(display, 10)
-    # pixelStream(display, "192.168.178.33", 7766)
+    pixelStream(display, "192.168.178.33", 7766)
 
     for event in xbox_read.event_stream(deadzone=12000):
         if event.key == 'RT':
