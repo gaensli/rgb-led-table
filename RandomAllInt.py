@@ -1,107 +1,77 @@
-#!/usr/bin/env python
-import math, sys
-import time, random
-import colorsys
+from random import shuffle
+
 import pygame
-from pygame.locals import *
-from colorsys import hsv_to_rgb, rgb_to_hsv
+
+from src.Beat import RGB_Table, change_pixels_random
 
 
-pixels = [[[0 for x in range(3)] for x in range(12)] for x in range(24)]
-brightness = 1.0
-waittime = 0.001
-spidev = file("/dev/spidev0.0", "wb")
-def hsv2rgb(h,s,v):
-    return tuple(int(i * 255) for i in hsv_to_rgb(h,s,v))
-def rgb2hsv(r,g,b):
-    return tuple(i  for i in rgb_to_hsv(r/ 255.0, g/ 255.0, b/ 255.0))
-def draw():
-        for row in pixels:
-                for pixel in row:
-                        for color in pixel:
-                                c = int(color*brightness)
-                                spidev.write(chr(c & 0xFF))
-        spidev.flush()
-        time.sleep(waittime)
-def initScreen():
-    global pixels
-    global brightness
-    for row in range(0,24):
-        for pixel in range(0,12):
-            r, g, b = hsv2rgb(random.uniform(0.0,0.18),1,1)
-            pixels[row][pixel]=[r*brightness,g*brightness,b*brightness]
-    draw()
-def changePixels():
-    global pixels
-    global brightness
-    for row in range(0,24):
-        for col in range(0,12):
-            #r, g, b = hsv2rgb(random.uniform(0.0,0.18),1,1)
-            r, g, b = hsv2rgb(random.uniform(0.0,0.18),random.uniform(0.0,0.18),random.uniform(0.0,0.18))
-            pixels[row][col] = [r*brightness,g*brightness,b*brightness]
-    draw() 
+def next_mode():
+    modes = ["red", "green", "blue", "sat"]
+    shuffle(modes)
+    return modes[0]
+
 if __name__ == '__main__':
-    pygame.quit()
     pygame.init()
     pygame.joystick.init()
+    clock = pygame.time.Clock()
     joystick_count = pygame.joystick.get_count()
+
     if joystick_count == 0:
-        print ("Error, I did not find any joysticks")
-    else:
-        j = pygame.joystick.Joystick(0)
-        j.quit()
-        j.init()
-        print 'Initialized Joystick : %s' % j.get_name()
-    initScreen()
-    while 1:
-        pygame.display
-        pygame.event.pump()
+        print("Error: Could not find any joysticks!")
+        exit(1)
 
+    j = pygame.joystick.Joystick(0)
+    print(f"Initialized joystick: {j.get_name()}")
 
-        if j.get_axis(1) <= -0.5:
-            if brightness <= 0.99:
-                brightness +=0.01
-                print 'Brightness : %s' % brightness
-                
-        if j.get_axis(1) >= +0.5:
-            if brightness >= 0.01:
-                brightness -=0.01
-                print("axis1")
+    display = RGB_Table()
+    mode = next_mode()
 
-        if j.get_axis(0) >= +0.5:
-            if waittime <= 99.981:
-                waittime +=0.02
-                print("axis0 > 0.5")
-               
-        if j.get_axis(0) <= -0.5:
-            if waittime >= 0.021:
-                waittime -=0.02
-                print("axis0 < 0.5")
+    brightness_step = 0.01
+    wait_time_step = 0.02
 
-        if j.get_button(1):
-            waittime = 0.001
-            brightness = 1.0
-            print("button")
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.JOYAXISMOTION:
+                print(f"Joystick axis motion: {event}")
 
-        global lastPressed
-        lastPressed = "nix"
+                if j.get_axis(1) <= -0.5:
+                    display.brightness += brightness_step
 
-        if j.get_axis(1) <= -0.5:  # D-Pad nach oben
-            lastPressed = "UP"
-        if j.get_axis(1) >= +0.5:  # D-Pad nach unten
-            lastPressed = "DOWN"
-        if j.get_axis(0) >= +0.5:  # D-Pad rechts
-            lastPressed = "RIGHT"
-        if j.get_axis(0) <= -0.5:  # D-Pad nach links
-            lastPressed = "LEFT"
-        if j.get_button(1):  # Button A - right red button - Rotate right
-            lastPressed = "A"
-        if j.get_button(2):  # Button B - left red button - Rotate left
-            lastPressed = "B"
-        if j.get_button(8):
-            lastPressed = "SELECT"
-        if j.get_button(9):
-            lastPressed = "START"
+                if j.get_axis(1) >= +0.5:
+                    display.brightness -= brightness_step
 
-        print(lastPressed)
-        changePixels()
+                if j.get_axis(0) >= +0.5:
+                    display.wait_time = min(1.0, display.wait_time + wait_time_step)
+
+                if j.get_axis(0) <= -0.5:
+                    display.wait_time = max(0.0, display.wait_time - wait_time_step)
+
+                print(f'brightness: {display.brightness:3.2f}')
+                print(f'wait_time: {display.wait_time:3.2f}')
+
+            if event.type == pygame.JOYBUTTONDOWN:
+                print(f"Joystick button pressed: {event}")
+
+                if j.get_button(0):  # Button A - right red button - Rotate right
+                    lastPressed = "A"
+                if j.get_button(1):  # Button B - left red button - Rotate left
+                    lastPressed = "B"
+                if j.get_button(3):
+                    lastPressed = "X"
+                if j.get_button(4):
+                    lastPressed = "Y"
+                if j.get_button(6):
+                    lastPressed = "L"
+                if j.get_button(7):
+                    lastPressed = "R"
+                if j.get_button(10):
+                    lastPressed = "SELECT"
+                    mode = next_mode()
+                if j.get_button(11):
+                    lastPressed = "START"
+
+            if event.type == pygame.JOYBUTTONUP:
+                print(f"Joystick button released: {event}")
+
+        change_pixels_random(display, mode=mode)
+        # clock.tick(25)
