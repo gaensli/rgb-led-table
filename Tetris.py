@@ -122,8 +122,6 @@ def get_blank_playfield(just_bool:bool = False):
 
 
 ####Global variables
-playerName = "Anon"
-hiScores = []
 activeTet = tiles.EMPTY_TILE
 activeTetCoords = [0, 0]
 activeTetRotation = 0
@@ -132,13 +130,11 @@ linescleared = 0
 dropPoints = 0
 playfield = get_blank_playfield()
 keyPressTimeout = 125
-keyPressTime = 0
 keyTimeout = 150
 keyTime = 0
 moveTimeout = 500
 moveTime = 0
 Tetris_Points = 0
-running = False
 paused = False
 
 
@@ -163,28 +159,41 @@ def fadeInOut(rgb):
 
 
 def spawn():
-    global  activeTet, activeTetRotation, activeTetCoords, dropPoints
+    global  activeTet, activeTetRotation, activeTetCoords, dropPoints, moveTime
     str_list = [tiles.I_TILE, tiles.O_TILE, tiles.T_TILE, tiles.S_TILE, tiles.Z_TILE, tiles.J_TILE, tiles.L_TILE]
     random.shuffle(str_list)
 
     activeTet = str_list[0]
     activeTetRotation = 0
     dropPoints = 0
+    tile_name = ""
     if activeTet == tiles.I_TILE:
+        tile_name = "I_TILE"
         activeTetCoords = [0, 3]
     elif activeTet == tiles.J_TILE:
+        tile_name = "J_TILE"
         activeTetCoords = [0, 3]
     elif activeTet == tiles.L_TILE:
+        tile_name = "L_TILE"
         activeTetCoords = [0, 3]
     elif activeTet == tiles.O_TILE:
+        tile_name = "O_TILE"
         activeTetCoords = [0, 4]
     elif activeTet == tiles.S_TILE:
+        tile_name = "S_TILE"
         activeTetCoords = [0, 3]
     elif activeTet == tiles.Z_TILE:
+        tile_name = "Z_TILE"
         activeTetCoords = [0, 3]
     elif activeTet == tiles.T_TILE:
+        tile_name = "T_TILE"
         activeTetCoords = [0, 3]
+
+    moveTime = pygame.time.get_ticks()
+
+    print(f"spawned {tile_name} at {activeTetCoords}")
     if check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=0, offset_y=0):
+        print(f"collision {activeTetCoords} {activeTetRotation} ")
         game_over()
 
 
@@ -228,40 +237,14 @@ def move_side(direction:str):
 
 
 def game_over():
-    global activeTet, activeTetCoords, activeTetRotation, playfield, keyTime, moveTimeout, moveTime, running, paused, Tetris_Points, level, keyPressTime, linescleared, dropPoints
+    global Tetris_Points
 
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
     snd_gameover.play()
     time.sleep(0.1)
     fadeInOut(RED)
-    # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-    # sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
-    # entry = (playerName, Tetris_Points)
-    # hiScores.append(entry)
-
-    # def getKey(item):
-    #    return item[1]
-
-    # hiScores.sort(key=getKey, reverse=True)
-    # pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
-
-    # reset game for next round
-    activeTet = tiles.EMPTY_TILE
-    activeTetCoords = [0, 0]
-    activeTetRotation = 0
-    linescleared = 0
-    dropPoints = 0
-    level = 1
-    playfield = get_blank_playfield()
-    keyPressTime = 0
-    keyTime = 0
-    moveTimeout = 500
-    moveTime = 0
-    Tetris_Points = 0
-    running = False
-    paused = False
-
+    raise Exception("Game over")
 
 def rotate(cw: bool):
     global activeTetRotation
@@ -276,26 +259,25 @@ def rotate(cw: bool):
         # cw i.e. clock-wise i.e. right turn
         # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
         activeTetRotation = next_rotation_lookup[activeTetRotation]
-    snd_click.play()
+        snd_click.play()
 
 
 def drop_down():
-    global activeTetCoords, keyTime, moveTime
+    global activeTetCoords
     while not check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=1, offset_y=0):
         activeTetCoords[0] += 1
-        keyTime = pygame.time.get_ticks()
-        moveTime = pygame.time.get_ticks()
         buildScreen()
+        time.sleep(0.01)
     fixTile()
 
 
 def move_down():
     global activeTetCoords, dropPoints
-    if check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=1, offset_y=0):
-        fixTile()
-    else:
+    if not check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=1, offset_y=0):
         activeTetCoords[0] += 1
         dropPoints += 1
+    else:
+        fixTile()
 
 
 def setLevelAndSpeed():
@@ -311,7 +293,7 @@ def setLevelAndSpeed():
     if level > previous_level:
         snd_level.play()
     moveTimeout = (11 - level) * 50
-    print(f"Lines cleared: {linescleared} - Level: {level} - moveTime: {moveTimeout} - Tetris Points: {Tetris_Points}")
+    print(f"Lines cleared: {linescleared} - Level: {level} - moveTimeout: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
 
 def checkFinishedLines():
@@ -355,7 +337,7 @@ def calculate_points(nof_cleared_lines: int):
 
 
 def fixTile():
-    global playfield, activeTet, activeTetRotation, activeTetCoords, moveTime, running, dropPoints, Tetris_Points, level
+    global playfield, activeTet, activeTetRotation, activeTetCoords, dropPoints, Tetris_Points, level
 
     # Add the active tetrimino to the fixed pixels with its color
     for row in range(len(activeTet[activeTetRotation])):
@@ -366,18 +348,13 @@ def fixTile():
                 if 0 <= x < len(playfield) and 0 <= y < len(playfield[0]):
                     playfield[x][y] = activeTet[4]
 
+    snd_tilefix.play()
     activeTet = tiles.EMPTY_TILE
     nof_cleared_lines = checkFinishedLines()
-    snd_tilefix.play()
-    time.sleep(moveTimeout / 1000.0)
-
     calculate_points(nof_cleared_lines)
-    setLevelAndSpeed()
     Tetris_Points += ((21 + (3 * level)) - dropPoints)
+    setLevelAndSpeed()
     spawn()
-    if running:
-        buildScreen()
-    moveTime = pygame.time.get_ticks()
 
 
 def getKeypress(joystick):
@@ -391,7 +368,6 @@ def getKeypress(joystick):
         key_pressed = "RIGHT"
     if joystick.get_axis(0) <= -0.5:  # D-Pad nach links
         key_pressed = "LEFT"
-
     if joystick.get_button(0):  # Button A - right red button - Rotate right
         key_pressed = "A"
     if joystick.get_button(1):  # Button B - left red button - Rotate left
@@ -405,59 +381,44 @@ def getKeypress(joystick):
 
 
 def keyAction(pressed_key):
-    global paused, keyPressTime
-
     if pressed_key == "UP":
         drop_down()
     if pressed_key == "DOWN":
         move_down()
-        keyPressTime = pygame.time.get_ticks()
     if pressed_key == "RIGHT":
         move_side("right")
-        keyPressTime = pygame.time.get_ticks()
     if pressed_key == "LEFT":
         move_side("left")
-        keyPressTime = pygame.time.get_ticks()
     if pressed_key == "A":
         rotate(True)
-        keyPressTime = pygame.time.get_ticks()
     if pressed_key == "B":
         rotate(False)
-        keyPressTime = pygame.time.get_ticks()
-
-    if pressed_key == "START":
-        print("Game paused")
-        paused = True
-        pygame.mixer.music.pause()
-        snd_pause.play()
-    buildScreen()
 
 
 def buildScreen():
     # Overlay fixed and mobile Pixels
-    global running, playfield, activeTet, activeTetRotation, activeTetCoords
+    global playfield, activeTet, activeTetRotation, activeTetCoords
 
-    if running:
-        for i in range(display.width):
-            display.set_pixel(i, 0, WHITE)
-            display.set_pixel(i, display.height - 1, WHITE)
-        for i in range(display.height):
-            display.set_pixel(0, i, WHITE)
-            display.set_pixel(display.width - 1, i, WHITE)
+    for i in range(display.width):
+        display.set_pixel(i, 0, WHITE)
+        display.set_pixel(i, display.height - 1, WHITE)
+    for i in range(display.height):
+        display.set_pixel(0, i, WHITE)
+        display.set_pixel(display.width - 1, i, WHITE)
 
-        for row in range(len(playfield)):
-            for col in range(len(playfield[row])):
-                display.set_pixel(row + 1, col + 1, playfield[row][col])
+    for row in range(len(playfield)):
+        for col in range(len(playfield[row])):
+            display.set_pixel(row + 1, col + 1, playfield[row][col])
 
-        if activeTet != tiles.EMPTY_TILE:
-            for row in range(len(activeTet[activeTetRotation])):
-                for col in range(len(activeTet[activeTetRotation][row])):
-                    if activeTet[activeTetRotation][row][col]:
-                        x = activeTetCoords[0] + row + 1
-                        y = activeTetCoords[1] + col + 1
-                        if 0 <= x < display.width and 0 <= y < display.height:
-                            display.set_pixel(x, y, activeTet[4])
-        display.show()
+    if activeTet != tiles.EMPTY_TILE:
+        for row in range(len(activeTet[activeTetRotation])):
+            for col in range(len(activeTet[activeTetRotation][row])):
+                if activeTet[activeTetRotation][row][col]:
+                    x = activeTetCoords[0] + row + 1
+                    y = activeTetCoords[1] + col + 1
+                    if 0 <= x < display.width and 0 <= y < display.height:
+                        display.set_pixel(x, y, activeTet[4])
+    display.show()
 
 
 if __name__ == '__main__':
@@ -496,38 +457,48 @@ if __name__ == '__main__':
     print("Game of Tetris started!")
     fadeInOut([128, 128, 128])
 
-    running = True
     spawn()
-    moveTime = pygame.time.get_ticks()
-    keyTime = moveTime
-    keyPressTime = moveTime
+    moveTime = keyTime = pygame.time.get_ticks()
     key_press = ""
 
-    while running:
-        if paused:
-            time.sleep(1)
-            while paused:
-                pygame.event.pump()
-                if joystick.get_button(11):
-                    print("Game resumed")
-                    snd_pause.play()
-                    pygame.mixer.music.unpause()
-                    time.sleep(1)
-                    paused = False
+    try:
+        while True:
+            if paused:
+                print("Game paused")
+                pygame.mixer.music.pause()
+                snd_pause.play()
+                time.sleep(1)
+                while joystick.get_button(11):
+                    pygame.event.pump()
+                    time.sleep(0.1)
 
-        if running:
-            if pygame.time.get_ticks() > keyPressTime + keyPressTimeout:
-                key_press = getKeypress(joystick)
+                while paused:
+                    pygame.event.pump()
+                    time.sleep(0.1)
+                    if joystick.get_button(11):
+                        print("Game resumed")
+                        snd_pause.play()
+                        time.sleep(1)
+                        pygame.mixer.music.unpause()
+                        paused = False
+
+            key_press = getKeypress(joystick)
+            if key_press == "START":
+                paused = True
+                continue
             if pygame.time.get_ticks() > keyTime + keyTimeout:
                 keyAction(key_press)
                 keyTime = pygame.time.get_ticks()
             if pygame.time.get_ticks() > moveTime + moveTimeout:
                 move_down()
                 moveTime = pygame.time.get_ticks()
-        if running:
+
             buildScreen()
 
-        # Throttle down CPU load...
-        time.sleep(0.01)
+            # Throttle down CPU load...
+            time.sleep(0.01)
+
+    except Exception as e:
+        pass
 
     print("Tetris ended.")
