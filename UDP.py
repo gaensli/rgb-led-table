@@ -5,6 +5,7 @@ import pygame
 import socket
 from lib import xbox_read
 
+from src.Beat import
 PIXEL_SIZE = 3
 gamma = bytearray(256)
 pixels = [[[255 for _ in range(3)] for _ in range(12)] for _ in range(24)]
