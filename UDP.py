@@ -1,65 +1,70 @@
 #!/usr/bin/env python
 import time
-import colorsys
 import pygame
 import socket
 from lib import xbox_read
 
-from src.Beat import
+from src.Beat import RGB_Table, colorfade, fade_in
+
 PIXEL_SIZE = 3
-gamma = bytearray(256)
-pixels = [[[255 for _ in range(3)] for _ in range(12)] for _ in range(24)]
-brightness = 0.0
-spidev = open("/dev/spidev0.0", "wb")
 
+class SimonSayGame:
+    def __init__(self, display):
+        self.display = display
+        pass
 
-def draw():
-    for row in pixels:
-        for pixel in row:
-            for color in pixel:
-                c = int(color * brightness)
-                spidev.write(chr(c & 0xFF))
-    spidev.flush()
-    time.sleep(0.001)
+    def simon_says(self):
+        pygame.mixer.music.load("sounds/tetrisaccapella.ogg")
+        # player = subprocess.Popen(["mplayer", "tetrisklavier.mp3", "loop 0"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pygame.mixer.music.play(-1)
 
+        sleeptime = 0.5
+        self.display.fill([0, 0, 0])
+        self.display.show()
+        for color in ['yellow', 'red', 'green', 'blue']:
+            self.simon_show_color(display, color, True)
+            time.sleep(sleeptime)
+            self.simon_show_color(display, color, False)
+            time.sleep(sleeptime)
 
-def showImage(img):
-    global pixels
-    pixels = img
-    draw()
+        fade_in(display, [0, 255, 0])
+        self.display.fill([0, 0, 0])
 
+    def simon_show_color(self, color: str, mode: bool):
+        colors = {
+            'red': (255, 0, 0),
+            'green': (0, 255, 0),
+            'blue': (0, 0, 255),
+            'yellow': (255, 255, 0)
+        }
+        blocks = {
+            'yellow': [[5, 3], [5, 4], [5, 5], [5, 6],
+                       [6, 3], [6, 4], [6, 5], [6, 6],
+                       [7, 3], [7, 4], [7, 5], [7, 6],
+                       [8, 3], [8, 4], [8, 5], [8, 6]],
+            'blue': [[8, 0], [8, 1], [8, 2], [8, 3],
+                     [9, 0], [9, 1], [9, 2], [9, 3],
+                     [10, 0], [10, 1], [10, 2], [10, 3],
+                     [11, 0], [11, 1], [11, 2], [11, 3]],
+            'green': [[11, 3], [11, 4], [11, 5], [11, 6],
+                      [12, 3], [12, 4], [12, 5], [12, 6],
+                      [13, 3], [13, 4], [13, 5], [13, 6],
+                      [14, 3], [14, 4], [14, 5], [14, 6]],
+            'red': [[8, 7], [8, 8], [8, 9], [8, 10],
+                    [9, 7], [9, 8], [9, 9], [9, 10],
+                    [10, 7], [10, 8], [10, 9], [10, 10],
+                    [11, 7], [11, 8], [11, 9], [11, 10]]
+        }
 
-def turnOff():
-    print("Turning all LEDs off")
-    global pixels
-    global brightness
-    pixels = [[[0 for _ in range(3)] for _ in range(10)] for _ in range(20)]
-    brightness = 1
-    draw()
+        if color in blocks and color in colors:
+            temp = blocks[color]
+            fg_color = colors[color] if mode else [0,0,0]
+        else:
+            return
 
-
-def fadeIn():
-    print("Fading in...")
-    global pixels
-    global brightness
-    brightness = 0
-    while brightness < 1:
-        draw()
-        brightness += 0.05
-
-
-def colorfade():
-    global pixels
-    h, s, v = 0.0, 1.0, 1.0
-    while 1:
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        aktFarbe = [0.0 for x in range(3)]
-        aktFarbe = round(r * 255, 0), round(g * 255, 0), round(b * 255, 0)
-        pixels = [[aktFarbe for x in range(10)] for x in range(20)]
-        draw()
-        h = h + 0.005
-        if (h > 1):
-            h = h - 1.
+        for ind in temp:
+            self.display.set_pixel(ind[0], ind[1], fg_color)
+        self.display.show()
 
 
 def correct_pixel_brightness(pixel):
@@ -71,297 +76,147 @@ def correct_pixel_brightness(pixel):
     return corrected_pixel
 
 
-def filter_pixel(input_pixel, brightness):
-    output_pixel = bytearray(PIXEL_SIZE)
-    input_pixel[0] = int(brightness * input_pixel[0])
-    input_pixel[1] = int(brightness * input_pixel[1])
-    input_pixel[2] = int(brightness * input_pixel[2])
+def filter_pixel(pixel, brightness):
+    output_pixel = [0, 0, 0]
 
-    output_pixel[0] = gamma[input_pixel[0]]
-    output_pixel[1] = gamma[input_pixel[1]]
-    output_pixel[2] = gamma[input_pixel[2]]
+    def gamma(value):
+        return int(pow(value / 255.0, 2.5) * 255.0)
+
+    for index in range(3):
+        output_pixel[index] = int(brightness * pixel[index])
+        output_pixel[index] = gamma(output_pixel[index])
+
     return output_pixel
 
 
-def simonSays():
-    pygame.mixer.music.load("sounds/tetrisaccapella.ogg")
-    # player = subprocess.Popen(["mplayer", "tetrisklavier.mp3", "loop 0"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    pygame.mixer.music.play(-1)
-    global brightness
-    global pixels
-    sleeptime = 0.1
-    brightness = 1.0
-    simonOff()
-    time.sleep(sleeptime)
-    simonYellow('on')
-    time.sleep(sleeptime)
-    simonRed('on')
-    time.sleep(sleeptime)
-    simonGreen('on')
-    time.sleep(sleeptime)
-    simonBlue('on')
-    time.sleep(sleeptime)
-    simonYellow('off')
-    time.sleep(sleeptime)
-    simonRed('off')
-    time.sleep(sleeptime)
-    simonGreen('off')
-    time.sleep(sleeptime)
-    simonBlue('off')
-    simonflash([0, 255, 0])
+def heart_beat(display, int):
+    BG = [0, 0, 0]
+    FG = [255, 0, 0]
 
+    heart1 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
 
-def simonOff():
-    global pixels
-    pixels = [[[0 for _ in range(3)] for _ in range(10)] for _ in range(20)]
-    draw()
+    heart2 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
 
-
-def simonYellow(mode):
-    global pixels
-    temp = [[5, 3], [5, 4], [5, 5], [5, 6], [6, 3], [6, 4], [6, 5], [6, 6], [7, 3], [7, 4], [7, 5], [7, 6], [8, 4],
-            [8, 5]]
-    if mode == 'on':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [255, 255, 0]
-        klickSound = pygame.mixer.Sound("sounds/click.ogg")
-        klickSound.play()
-    elif mode == 'off':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 0, 0]
-    draw()
-
-
-def simonRed(mode):
-    global pixels
-    temp = [[8, 7], [8, 8], [8, 9], [9, 0], [9, 1], [9, 2], [9, 3], [10, 6], [10, 7], [10, 8], [10, 9], [11, 0],
-            [11, 1], [11, 2]]
-    if mode == 'on':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [255, 0, 0]
-    elif mode == 'off':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 0, 0]
-    draw()
-
-
-def simonGreen(mode):
-    global pixels
-    temp = [[11, 4], [11, 5], [12, 3], [12, 4], [12, 5], [12, 6], [13, 3], [13, 4], [13, 5], [13, 6], [14, 3], [14, 4],
-            [14, 5], [14, 6]]
-    if mode == 'on':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 255, 0]
-    elif mode == 'off':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 0, 0]
-    draw()
-
-
-def simonBlue(mode):
-    global pixels
-    temp = [[8, 0], [8, 1], [8, 2], [9, 6], [9, 7], [9, 8], [9, 9], [10, 0], [10, 1], [10, 2], [10, 3], [11, 7],
-            [11, 8], [11, 9]]
-    if mode == 'on':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 0, 255]
-    elif mode == 'off':
-        for ind in temp:
-            pixels[ind[0]][ind[1]] = [0, 0, 0]
-    draw()
-
-
-def herzSchlag(int):
-    heart = [[[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-             [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-             [[255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-             [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-             [[255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0],
-              [255, 0, 0], [255, 0, 0], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-             [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-              [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]]]
-    heartBeat = [[[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-                 [[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0],
-                  [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]],
-                 [[255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255],
-                  [255, 255, 255], [255, 255, 255], [255, 255, 255], [255, 255, 255]]]
     for x in range(int):
-        showImage(heart)
-        time.sleep(0.3)
-        showImage(heartBeat)
-        time.sleep(1.5)
+        display.show_image(heart1)
+        time.sleep(0.1)
+        display.show_image(heart2)
+        time.sleep(0.1)
+        display.show_image(heart1)
+        time.sleep(0.1)
+        display.show_image(heart2)
+        time.sleep(0.5)
 
 
-def simonflash(flashcolor):
-    global pixels
-    b = 0.0
-    while b < 1.0:
-        flash = [round(flashcolor[0] * b, 0), round(flashcolor[1] * b, 0), round(flashcolor[2] * b, 0)]
-        pixels = [[flash for x in range(10)] for x in range(20)]
-        draw()
-        b = b + 0.1
-        time.sleep(0.001)
-    simonOff()
+def pixelStream(display, UDP, PORT):
+    FG = [255, 0, 0]
+    BG = [0, 0, 0]
+    udpBild = [[BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
+               [BG, BG, BG, FG, BG, BG, BG, BG, BG, BG],
+               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
+               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
+               [BG, BG, BG, FG, BG, BG, BG, FG, BG, BG],
+               [BG, BG, BG, BG, FG, FG, FG, BG, BG, BG],
+               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+               [BG, BG, BG, FG, FG, FG, FG, FG, BG, BG],
+               [BG, BG, BG, BG, BG, FG, BG, FG, BG, BG],
+               [BG, BG, BG, BG, BG, FG, FG, FG, BG, BG],
+               [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
 
+    display.show_image(udpBild)
+    time.sleep(2)
 
-def pixelStream(UDP, PORT):
-    print("Start Pixel listener " + UDP + ":" + str(PORT))
-    sock = socket.socket(socket.AF_INET,  # Internet
-                         socket.SOCK_DGRAM)  # UDP
+    print(f"Start Pixel listener {UDP}:{PORT}")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)     # socker for ip/udp
     sock.bind((UDP, PORT))
-    UDP_BUFFER_SIZE = 600
+    udp_buffer_size = 600
+
     while True:
-        data, addr = sock.recvfrom(UDP_BUFFER_SIZE)
+        data, _ = sock.recvfrom(udp_buffer_size)
         pixels_in_buffer = int(len(data) / PIXEL_SIZE)
         pixels = bytearray(pixels_in_buffer * PIXEL_SIZE)
         for pixel_index in range(pixels_in_buffer):
             pixel_to_adjust = bytearray(data[(pixel_index * PIXEL_SIZE):((pixel_index * PIXEL_SIZE) + PIXEL_SIZE)])
             pixel_to_filter = correct_pixel_brightness(pixel_to_adjust)
-            pixels[((pixel_index) * PIXEL_SIZE):] = filter_pixel(pixel_to_filter[:], 1)
+            pixels[(pixel_index * PIXEL_SIZE):] = filter_pixel(pixel_to_filter, 1)
 
-        spidev.write(pixels)
-        spidev.flush()
+        display.show()
         time.sleep(0.001)
 
 
 if __name__ == '__main__':
-    for i in range(256):
-        gamma[i] = int(pow(i / 255.0, 2.5) * 255.0)
+    display = RGB_Table()
 
     pygame.mixer.pre_init(11025, -16, 2, 4096)
     pygame.init()
 
-    udpBild = [
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-        [[255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-        [[255, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]]
-    showImage(udpBild)
-    time.sleep(1)
-    simonSays()
-    herzSchlag(200)
-    pixelStream("192.168.1.49", 7766)
+    game = SimonSayGame(display)
+    game.simon_says()
 
-for event in xbox_read.event_stream(deadzone=12000):
-    # if event.key=='RB' or event.key=='LB':
-    #    if event.key=='RB' and event.value==1:
-    #       if brightness < 1:
-    #               brightness += 0.1
-    #               print("Helligkeit um 10% erhoeht - Aktuell:",round(brightness*100,0),"%.")
-    #               draw()
-    #               time.sleep(0.1)
-    #    elif event.key=='LB' and event.value==1:
-    #       if brightness > .09:
-    #               brightness -= 0.1
-    #               print("Helligkeit um 10% erniedrigt - Aktuell:",round(brightness*100,0),"%.")
-    #               draw()
-    #               time.sleep(0.1)
-    if event.key == 'RT':
-        pixels = [[[255 for x in range(3)] for x in range(10)] for x in range(20)]
-        brightness = round(1.0 * event.value / 255, 2)
-        draw()
-    if event.key == 'LT':
-        colorfade()
-    if event.key == 'A':
-        if event.value == 1:
-            simonGreen('on')
-        else:
-            simonGreen('off')
-    if event.key == 'B':
-        if event.value == 1:
-            simonRed('on')
-        else:
-            simonRed('off')
-    if event.key == 'X':
-        if event.value == 1:
-            simonBlue('on')
-        else:
-            simonBlue('off')
-    if event.key == 'Y':
-        if event.value == 1:
-            simonYellow('on')
-        else:
-            simonYellow('off')
+    heart_beat(display, 10)
+    # pixelStream(display, "192.168.178.33", 7766)
+
+    for event in xbox_read.event_stream(deadzone=12000):
+        if event.key == 'RT':
+            display.fill([255,255,255])
+            display.brightness = round(1.0 * event.value / 255, 2)
+            display.show()
+
+        if event.key == 'LT':
+            colorfade(display)
+
+        color = ""
+        if event.key == 'A':
+            color = 'green'
+        if event.key == 'B':
+            color = 'red'
+        if event.key == 'X':
+            color = 'blue'
+        if event.key == 'Y':
+            color = 'yellow'
+
+        if color and event.value == 1:
+            game.simon_show_color(color, True)
+        elif color and event.value == 0:
+            game.simon_show_color('green', False)
