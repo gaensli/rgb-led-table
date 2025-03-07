@@ -263,10 +263,9 @@ def get_next_rotation(cw: bool):
     # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
     if cw:
         next_rotation_lookup = [1, 2, 3, 0]
-        return next_rotation_lookup[activeTetRotation]
     else:
         next_rotation_lookup = [1, 2, 3, 0]
-        return next_rotation_lookup[activeTetRotation]
+    return next_rotation_lookup[activeTetRotation]
 
 
 def check_no_collision(cw: bool):
@@ -274,7 +273,7 @@ def check_no_collision(cw: bool):
     # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
     next_rotation = get_next_rotation(cw)
 
-    temp_pixels = [[0 for x in range(12)] for x in range(26)]
+    temp_pixels = [[0] * 12 for _ in range(26)]
     for row in range(len(activeTet[next_rotation])):
         for col in range(len(activeTet[next_rotation][0])):
             if activeTet[next_rotation][row][col]:
@@ -287,9 +286,9 @@ def check_no_collision(cw: bool):
     return True
 
 
-def rotateLeft():
+def rotate(cw: bool):
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
-    next_rotation = get_next_rotation(False)
+    next_rotation = get_next_rotation(cw)
 
     if activeTet == tiles.O_TILE:
         return
@@ -297,28 +296,28 @@ def rotateLeft():
         if activeTetRotation == 0:
             if activeTetCoords[0] > 23:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 2
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 1:
             if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 2
                 activeTetCoords[0] += 2
         elif activeTetRotation == 2:
             if activeTetCoords[0] > 24:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 2
         elif activeTetRotation == 3:
             if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
@@ -326,95 +325,28 @@ def rotateLeft():
         if activeTetRotation == 0:
             if activeTetCoords[0] > 23:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 0
         elif activeTetRotation == 1:
             if activeTetCoords[1] < 1:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
         elif activeTetRotation == 2:
             if activeTetCoords[0] > 24:
                 return
-            if check_no_collision(False):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] += 0
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 3:
             if activeTetCoords[1] > 7:
                 return
-            if check_no_collision(False):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] -= 0
-                activeTetCoords[0] += 0
-    snd_click.play()
-
-
-def rotateRight():
-    global fixedPixels, activeTet, activeTetCoords, activeTetRotation
-    next_rotation = get_next_rotation(True)
-
-    if activeTet == tiles.O_TILE:
-        return
-    if activeTet == tiles.I_TILE:
-        if activeTetRotation == 0:
-            if activeTetCoords[0] > 23:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] += 2
-                activeTetCoords[0] -= 1
-        elif activeTetRotation == 1:
-            if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] -= 2
-                activeTetCoords[0] += 2
-        elif activeTetRotation == 2:
-            if activeTetCoords[0] > 24:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] += 1
-                activeTetCoords[0] -= 2
-        elif activeTetRotation == 3:
-            if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] -= 1
-                activeTetCoords[0] += 1
-    else:
-        if activeTetRotation == 0:
-            if activeTetCoords[0] > 23:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] += 1
-                activeTetCoords[0] -= 0
-        elif activeTetRotation == 1:
-            if activeTetCoords[1] < 1:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] -= 1
-                activeTetCoords[0] += 1
-        elif activeTetRotation == 2:
-            if activeTetCoords[0] > 24:
-                return
-            if check_no_collision(True):
-                activeTetRotation = next_rotation
-                activeTetCoords[1] += 0
-                activeTetCoords[0] -= 1
-        elif activeTetRotation == 3:
-            if activeTetCoords[1] > 7:
-                return
-            if check_no_collision(True):
+            if check_no_collision(cw):
                 activeTetRotation = next_rotation
                 activeTetCoords[1] -= 0
                 activeTetCoords[0] += 0
@@ -438,10 +370,10 @@ def keyAction(pressed_key):
             move_side("left")
         keyPressTime = pygame.time.get_ticks()
     if pressed_key == "A":
-        rotateRight()
+        rotate(True)
         keyPressTime = pygame.time.get_ticks()
     if pressed_key == "B":
-        rotateLeft()
+        rotate(False)
         keyPressTime = pygame.time.get_ticks()
 
     if pressed_key == "START":
@@ -454,7 +386,7 @@ def keyAction(pressed_key):
 
 def checkMoveDownCollision():
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords
-    tempPixels = [[0 for x in range(12)] for x in range(27)]  # hib
+    tempPixels = [[0] * 12 for _ in range(27)]  # hib
     for row in range(len(activeTet[activeTetRotation])):
         for col in range(len(activeTet[activeTetRotation][row])):
             tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
