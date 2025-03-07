@@ -321,17 +321,18 @@ def color_chase(display):
 
 if __name__ == "__main__":
     display = RGB_Table()
+    
     # rainbow_cycle_successive(display)
     # rainbow_cycle(display)
     # rainbow_colors(display)
     # rgb_decrease(display)
     # color_chase(display)
     # fade_in_out(display)
+    # appear_from_back(display)
 
     while True:
         change_pixels_random(display, "blue")
         # time_display(display)
-        # appear_from_back(display)
         # blink_color(display, color=(255, 0, 0))
         # blink_color(display, color=(0, 255, 0))
         # blink_color(display, color=(0, 0, 255))
