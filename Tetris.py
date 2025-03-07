@@ -177,7 +177,6 @@ keyTime = 0
 moveTimeout = 500
 moveTime = 0
 Tetris_Points = 0
-paused = False
 
 
 def fadeInOut(rgb):
@@ -441,29 +440,23 @@ if __name__ == '__main__':
 
     try:
         while True:
-            if paused:
+            key_press = getKeypress(joystick)
+            if key_press == "START":
                 print("Game paused")
                 pygame.mixer.music.pause()
                 snd_pause.play()
-                time.sleep(1)
                 while joystick.get_button(11):
                     pygame.event.pump()
                     time.sleep(0.1)
-
-                while paused:
+                while not joystick.get_button(11):
                     pygame.event.pump()
                     time.sleep(0.1)
-                    if joystick.get_button(11):
-                        print("Game resumed")
-                        snd_pause.play()
-                        time.sleep(1)
-                        pygame.mixer.music.unpause()
-                        paused = False
 
-            key_press = getKeypress(joystick)
-            if key_press == "START":
-                paused = True
-                continue
+                print("Game resumed")
+                snd_pause.play()
+                time.sleep(1)
+                pygame.mixer.music.unpause()
+
             if pygame.time.get_ticks() > keyTime + keyTimeout:
                 keyAction(key_press)
                 keyTime = pygame.time.get_ticks()
