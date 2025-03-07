@@ -1,45 +1,79 @@
-# Simple demo of the WS2801/SPI-like addressable RGB LED lights.
 import time
 import colorsys
 import random
 
-
-# Import the WS2801 module.
 import Adafruit_WS2801
 import Adafruit_GPIO.SPI as SPI
 
-# Configure the count of pixels:
-WIDTH = 24
-HEIGHT = 12
-PIXEL_COUNT = WIDTH * HEIGHT
 
-PIXEL_MAPPING = []
-for col in range(WIDTH):
-    col_map = []
-    for row in range(HEIGHT):
-        if row % 2 == 0:
-            col_map.append(row * 24 + col)
-        else:
-            col_map.append(((row + 1) * 24 - (col + 1)))
-    PIXEL_MAPPING.append(col_map)
+class RGB_Table:
+    def __init__(self):
+        # Configure the count of pixels:
+        self.width = 24
+        self.height = 12
 
+        self._pixel_mapping = []
+        for col in range(self.width):
+            col_map = []
+            for row in range(self.height):
+                if row % 2 == 0:
+                    col_map.append(row * 24 + col)
+                else:
+                    col_map.append(((row + 1) * 24 - (col + 1)))
+            self._pixel_mapping.append(col_map)
 
-# Alternatively specify a hardware SPI connection on /dev/spidev0.0:
-SPI_PORT = 0
-SPI_DEVICE = 0
-pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+        # Alternatively specify a hardware SPI connection on /dev/spidev0.0:
+        SPI_PORT = 0
+        SPI_DEVICE = 0
+        self.pixels = Adafruit_WS2801.WS2801Pixels(self.width * self.height, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
-def hsv2rgb(h, s, v):
+        self._brightness = 1.0
+
+        self.wait_time = 1 / 30
+
+        self.pixels.clear()  # Clear all the pixels to turn them off.
+        self.pixels.show()  # Make sure to call show() after changing any pixels!
+
+    def set_pixel(self, x, y, rgb):
+        r, g, b = int(rgb[0] * self._brightness), int(rgb[1] * self._brightness), int(rgb[2] * self._brightness)
+        self.pixels.set_pixel_rgb(self._pixel_mapping[x][y], r, g, b)
+
+    def fill(self, rgb):
+        self.pixels.set_pixels_rgb(rgb[0], rgb[1], rgb[2])
+
+    def set_each_pixel(self, fun):
+        for i in range(self.height * self.width):
+            r, g, b = fun()
+            self.pixels.set_pixel_rgb(i, r, g, b)
+
+    def show(self):
+        self.pixels.show()
+
+    def __len__(self):
+        return self.width * self.height
+
+    def wait(self):
+        time.sleep(self.wait_time)
+
+    @property
+    def brightness(self):
+        return self._brightness
+
+    @brightness.setter
+    def brightness(self, value):
+        self._brightness = min(max(0.0, value), 1.0)
+
+def hsv2rgb(h: float, s: float, v: float) -> tuple[int, ...]:
     return tuple(int(i * 255) for i in colorsys.hsv_to_rgb(h, s, v))
 
 
-def rgb2hsv(r, g, b):
-    return tuple(i for i in colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0))
+def rgb2hsv(r: int, g: int, b: int) -> tuple[float, ...]:
+    return tuple(float(i) for i in colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0))
 
-mode = 'red'
-brightness = 1.0
+mode = 'blue'
 
-def random_color():
+
+def random_color() -> tuple[int, int, int]:
     if mode == 'blue':
         r, g, b = hsv2rgb(random.uniform(0.35, 0.5), 1.0, 1.0)
     elif mode == 'green':
@@ -51,28 +85,16 @@ def random_color():
     else:
         r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
 
-    r = int(r * brightness)
-    g = int(g * brightness)
-    b = int(b * brightness)
-
-    return Adafruit_WS2801.RGB_to_color(r, g, b)
+    return r, g, b
 
 
-def init_screen_for_random():
-    for row in range(24):
-        for col in range(12):
-            pixels.set_pixel(PIXEL_MAPPING[row][col], random_color())
-    pixels.show()
-
-
-def change_pixels_random():
-    row = random.randint(0, 23)
-    col = random.randint(0, 11)
+def change_pixels_random(display):
+    # fade out on all pixels first
     fade_out = True
     fade_out_expo = 0.98
     if fade_out:
-        for i in range(pixels.count()):
-            r, g, b = Adafruit_WS2801.color_to_RGB(pixels.get_pixel(i))
+        for i in range(len(display)):
+            r, g, b = display.pixels.get_pixel_rgb(i)
             if fade_out_expo:
                 r = int(r * fade_out_expo)
                 g = int(g * fade_out_expo)
@@ -81,14 +103,18 @@ def change_pixels_random():
                 r = max(0, r - 1)
                 g = max(0, g - 1)
                 b = max(0, b - 1)
-            pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(r, g, b))
+            display.pixels.set_pixel_rgb(i, r, g, b)
 
-    pixels.set_pixel(PIXEL_MAPPING[row][col], random_color())
-    pixels.show()
+    # set 1 random pixel to random color
+    row = random.randint(0, 23)
+    col = random.randint(0, 11)
+    display.set_pixel(row, col, random_color())
+    display.show()
+    display.wait()
 
 
-# Define the wheel function to interpolate between different hues.
-def wheel(pos):
+def wheel(pos: int) -> int:
+    # Define the wheel function to interpolate between different hues.
     if pos < 85:
         return Adafruit_WS2801.RGB_to_color(pos * 3, 255 - pos * 3, 0)
     elif pos < 170:
@@ -100,78 +126,72 @@ def wheel(pos):
 
 
 # Define rainbow cycle function to do a cycle of all hues.
-def rainbow_cycle_successive(wait=0.1):
-    for i in range(pixels.count()):
+def rainbow_cycle_successive(display):
+    for i in range(len(display)):
         # tricky math! we use each pixel as a fraction of the full 96-color wheel
         # (that is the i / strip.numPixels() part)
         # Then add in j which makes the colors go around per pixel
         # the % 96 is to make the wheel cycle around
-        pixels.set_pixel(i, wheel((i * 256 // pixels.count()) % 256))
-        pixels.show()
-        if wait > 0:
-            time.sleep(wait)
+        display.pixels.set_pixel(i, wheel((i * 256 // len(display) % 256)))
+        display.show()
+        display.wait()
 
 
-def rainbow_cycle(wait=0.005):
+def rainbow_cycle(display):
     for j in range(10):  # one cycle of all 256 colors in the wheel
-        for i in range(pixels.count()):
-            pixels.set_pixel(i, wheel(((i * 256 // pixels.count()) + j) % 256))
-        pixels.show()
-        if wait > 0:
-            time.sleep(wait)
+        for i in range(len(display)):
+            display.pixels.set_pixel(i, wheel(((i * 256 // len(display)) + j) % 256))
+        display.show()
+        display.wait()
 
 
-def rainbow_colors(wait=0.05):
-    for j in range(256):  # one cycle of all 256 colors in the wheel
-        for i in range(pixels.count()):
-            pixels.set_pixel(i, wheel((256 // pixels.count() + j) % 256))
-        pixels.show()
-        if wait > 0:
-            time.sleep(wait)
+def rainbow_colors(display):
+    rainbow_cycle_steps = 256
+    for j in range(rainbow_cycle_steps):  # one cycle of all 256 colors in the wheel
+        display.pixels.set_pixels(wheel((rainbow_cycle_steps // len(display) + j) % rainbow_cycle_steps))
+        display.show()
+        display.wait()
 
-
-def brightness_decrease(wait=0.01, step=1):
+def brightness_decrease(display, step=1):
     for j in range(int(256 // step)):
-        for i in range(pixels.count()):
-            r, g, b = pixels.get_pixel_rgb(i)
+        for i in range(len(display)):
+            r, g, b = display.pixels.get_pixel_rgb(i)
             r = int(max(0, r - step))
             g = int(max(0, g - step))
             b = int(max(0, b - step))
-            pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(r, g, b))
-        pixels.show()
-        if wait > 0:
-            time.sleep(wait)
+            display.pixels.set_pixel_rgb(i, r, g, b)
+        display.show()
 
 
-def blink_color(blink_times=5, wait=0.5, color=(255, 0, 0)):
+def blink_color(display, blink_times=5, wait=0.5, color=(255, 0, 0)):
     for i in range(blink_times):
         # blink two times, then wait
-        pixels.clear()
+        display.pixels.clear()
         for j in range(2):
-            for k in range(pixels.count()):
-                pixels.set_pixel(k, Adafruit_WS2801.RGB_to_color(color[0], color[1], color[2]))
-            pixels.show()
+            for k in range(display.pixels.count()):
+                display.pixels.set_pixel_rgb(k, color[0], color[1], color[2])
+            display.show()
             time.sleep(0.08)
-            pixels.clear()
-            pixels.show()
+            display.pixels.clear()
+            display.show()
             time.sleep(0.08)
         time.sleep(wait)
 
 
-def appear_from_back(color=(255, 0, 0)):
-    for i in range(pixels.count()):
-        for j in reversed(range(i, pixels.count())):
-            pixels.clear()
+def appear_from_back(display, color=(255, 0, 0)):
+    for i in range(display.pixels.count()):
+        for j in reversed(range(i, display.pixels.count())):
+            display.pixels.clear()
             # first set all pixels at the beginning
             for k in range(i):
-                pixels.set_pixel(k, Adafruit_WS2801.RGB_to_color(color[0], color[1], color[2]))
+                display.pixels.set_pixel_rgb(k, color[0], color[1], color[2])
             # set then the pixel at position j
-            pixels.set_pixel(j, Adafruit_WS2801.RGB_to_color(color[0], color[1], color[2]))
-            pixels.show()
-            # time.sleep(0.001)
+            display.pixels.set_pixel_rgb(j, color[0], color[1], color[2])
+            display.show()
+            display.wait()
 
 
-def show_digit(position, digit, color):
+def show_digit(display, position, digit, color):
     x_pos = [4, 8, 14, 18]
     y_pos = 4
 
@@ -232,15 +252,15 @@ def show_digit(position, digit, color):
     for x in range(3):
         for y in range(5):
             if d[y][x]:
-                pixels.set_pixel(PIXEL_MAPPING[x + x_pos[position]][y_pos + 4 - y], color)
+                display.set_pixel(x + x_pos[position], y_pos + 4 - y, color)
 
 
-def show_dots(color):
-    pixels.set_pixel(PIXEL_MAPPING[12][5], color)
-    pixels.set_pixel(PIXEL_MAPPING[12][7], color)
+def show_dots(display, color):
+    display.set_pixel(12, 5, color)
+    display.set_pixel(12, 7, color)
 
 
-def time_display():
+def time_display(display):
     # digit pixe# 0  0  0  1  1  1  2  2  2  3  3  3  4  4  4  5  5  5  6  6  6  7  7  7  8  8  8  9  9  9
     numMatrix = [[0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0],    # x == 1
                  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1],    # x == 2
@@ -251,84 +271,76 @@ def time_display():
                  [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1],    # x == 7
                  [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0]]    # x == 8
 
-    print("time_display")
-
-    fg_color = Adafruit_WS2801.RGB_to_color(255, 30, 0)
-    # fg_color = Adafruit_WS2801.RGB_to_color(255, 0, 0)
-    bg_color = Adafruit_WS2801.RGB_to_color(0, 0, 0)
+    fg_color = (255, 30, 0)
+    # fg_color = (255, 0, 0)
+    bg_color = (0, 0, 0)
 
     # TODO random color for digits and dots.
 
-    while True:
-        pixels.set_pixels(bg_color)
+    display.pixels.set_pixels_rgb(bg_color[0], bg_color[1], bg_color[2])
 
-        now = time.localtime()
-        timestring = time.strftime("%H%M%S", now)
-        for pos, digit in enumerate(timestring[0:4]):
-            show_digit(pos, digit, fg_color)
+    now = time.localtime()
+    timestring = time.strftime("%H%M%S", now)
+    for pos, digit in enumerate(timestring[0:4]):
+        show_digit(display, pos, digit, fg_color)
 
-        seconds = now.tm_sec
-        if seconds % 2 == 0:
-            show_dots(fg_color)
+    seconds = now.tm_sec
+    if seconds % 2 == 0:
+        show_dots(display, fg_color)
 
-        pixels.show()
-        time.sleep(0.1)
-
-
-def fade_in_out():
-    print("fade_in_out")
-    brightness = 0.0
-    while brightness < 1:
-        rgb = int(255 * brightness)
-        pixels.set_pixels(Adafruit_WS2801.RGB_to_color(rgb, rgb, rgb))
-        pixels.show()
-        time.sleep(0.02)
-        brightness += 0.01
-    brightness = 1.0
-
-    while brightness > 0:
-        rgb = int(255 * brightness)
-        pixels.set_pixels(Adafruit_WS2801.RGB_to_color(rgb, rgb, rgb))
-        pixels.show()
-        time.sleep(0.02)
-        brightness -= 0.01
-
-    pixels.set_pixels(Adafruit_WS2801.RGB_to_color(0, 0, 0))
-    pixels.show()
+    display.show()
+    display.wait()
 
 
-def color_chase():
-    print("color_chase")
+def fade_in_out(display):
+    display.brightness = 0.0
+    while display.brightness < 1:
+        rgb = int(255 * display.brightness)
+        display.pixels.set_pixels_rgb(rgb, rgb, rgb)
+        display.show()
+        display.wait()
+        display.brightness += 0.01
+    display._brightness = 1.0
+
+    while display.brightness > 0:
+        rgb = int(255 * display.brightness)
+        display.pixels.set_pixels_rgb(rgb, rgb, rgb)
+        display.show()
+        display.wait()
+        display.brightness -= 0.01
+
+    display.pixels.set_pixels_rgb(0, 0, 0)
+    display.show()
+
+
+def color_chase(display):
     h, s, v = 0.0, 1.0, 1.0
-    for led in range(pixels.count()):
+    for led in range(len(display)):
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
         r, g, b = int(r * 255), int(g * 255), int(b * 255)
-        pixels.set_pixel(led, Adafruit_WS2801.RGB_to_color(r, g, b))
-        pixels.show()
+        display.pixels.set_pixel_rgb(led, r, g, b)
+        display.show()
 
-        h += 1.0 / pixels.count()
+        h += 1.0 / len(display)
         if h > 1:
             h = h - 1.0
 
 
 if __name__ == "__main__":
-    pixels.clear()      # Clear all the pixels to turn them off.
-    pixels.show()       # Make sure to call show() after changing any pixels!
+    display = RGB_Table()
 
-    # rainbow_cycle_successive(wait=0.1)
-    # rainbow_cycle(wait=0.01)
-    # brightness_decrease()
+    # rainbow_cycle_successive(display)
+    # rainbow_cycle(display)
+    # rainbow_colors(display)
+    # brightness_decrease(display)
+    # color_chase(display)
+    # fade_in_out(display)
 
-    init_screen_for_random()
     while True:
-        change_pixels_random()
-        time.sleep(0.01)
-
-    # time_display()
-    # appear_from_back()
+        # change_pixels_random(display)
+        time_display(display)
+        # appear_from_back(display)
     # for i in range(3):
-    #    blink_color(blink_times=1, color=(255, 0, 0))
-    #    blink_color(blink_times=1, color=(0, 255, 0))
-    #    blink_color(blink_times=1, color=(0, 0, 255))
-    # rainbow_colors()
-    # brightness_decrease()
+    #    blink_color(display, blink_times=1, color=(255, 0, 0))
+    #    blink_color(display, blink_times=1, color=(0, 255, 0))
+    #    blink_color(display, blink_times=1, color=(0, 0, 255))
