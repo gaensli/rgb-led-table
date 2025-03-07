@@ -117,7 +117,6 @@ brightness = 1.0
 Tetris_Points = 0
 running = False
 paused = False
-lastPressed = "NONE"
 
 
 def fadeInOut(rgb):
@@ -165,7 +164,7 @@ def checkSpawn():
 
 # Spawn a new Tetromino
 def resetGame():
-    global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, movingPixels, displayPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, Tetris_Points, lastPressed, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
+    global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, movingPixels, displayPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
     rndSeq = []
     activeTet = ""
     activeTetCoords = [0, 0]
@@ -186,7 +185,6 @@ def resetGame():
     Tetris_Points = 0
     running = False
     paused = False
-    lastPressed = "NONE"
 
 
 def spawn():
@@ -266,7 +264,7 @@ def moveLeft():
 
 # Player is gameover
 def gameOver():
-    print("Game over. " + str(Tetris_Points) + " points.")
+    print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
     snd_gameover.play()
     time.sleep(3)
@@ -596,37 +594,35 @@ def rotateRight():
 
 
 # Process inputs
-def keyAction():
-    global lastPressed, paused, keyPressTime
+def keyAction(pressed_key):
+    global paused, keyPressTime
 
-    if lastPressed == "UP":
+    if pressed_key == "UP":
         dropDown()
-    if lastPressed == "DOWN":
+    if pressed_key == "DOWN":
         moveDown()
         keyPressTime = pygame.time.get_ticks()
-    if lastPressed == "RIGHT":
+    if pressed_key == "RIGHT":
         if not checkMoveRightCollision():
             moveRight()
-            keyPressTime = pygame.time.get_ticks()
-    if lastPressed == "LEFT":
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "LEFT":
         if not checkMoveLeftCollision():
             moveLeft()
-            keyPressTime = pygame.time.get_ticks()
-    if lastPressed == "A":
+        keyPressTime = pygame.time.get_ticks()
+    if pressed_key == "A":
         rotateRight()
         keyPressTime = pygame.time.get_ticks()
-    if lastPressed == "B":
+    if pressed_key == "B":
         rotateLeft()
         keyPressTime = pygame.time.get_ticks()
-    if lastPressed == "SELECT":
-        print("Button 8 - Select button")
-    if lastPressed == "START":
+
+    if pressed_key == "START":
         print("Game paused")
         paused = True
         pygame.mixer.music.pause()
         snd_pause.play()
     buildScreen()
-    lastPressed = "NONE"
 
 
 def checkMoveDownCollision():
@@ -648,20 +644,19 @@ def checkMoveDownCollision():
 
 
 def setLevelAndSpeed(lines):
-    global linescleared, level, moveTimeout, Tetris_Points
-    prelevel = level
+    global level, moveTimeout, Tetris_Points
+    previous_level = level
     if linescleared <= 0:
         level = 1
-    elif linescleared >= 1 and linescleared <= 90:
-        level = 1 + ((linescleared - 1) / 10)
-    elif linescleared >= 91:
+    elif 1 <= lines <= 90:
+        level = 1 + ((lines - 1) / 10)
+    elif lines >= 91:
         level = 10
 
-    if level > prelevel:
+    if level > previous_level:
         snd_level.play()
-    moveTimeout = (((11 - level) * 50))
-    print("Abgeraeumte Linien: " + str(linescleared) + " - Level: " + str(level) + " - moveTime: " + str(
-        moveTimeout) + " - Tetris Points: " + str(Tetris_Points))
+    moveTimeout = (11 - level) * 50
+    print(f"Lines cleared: {lines} - Level: {level} - moveTime: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
 
 def checkFinishedLines():
@@ -698,10 +693,13 @@ def checkFinishedLines():
 
 def fixTile():
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords, moveTime, running, dropPoints, Tetris_Points, level
+
+    # Add the active tetrimino to the fixed pixels.
     for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][0])):
+        for col in range(len(activeTet[activeTetRotation][row])):
             if activeTet[activeTetRotation][row][col]:
                 fixedPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = activeTet[4]
+
     activeTet = None
     checkFinishedLines()
     snd_tilefix.play()
@@ -742,25 +740,28 @@ def moveDown():
         dropPoints += 1
 
 
-def getKeypress(u):
-    global lastPressed
+def getKeypress(joystick):
     pygame.event.pump()
-    if u.get_axis(1) <= -0.5:  # D-Pad nach oben
-        lastPressed = "UP"
-    if u.get_axis(1) >= +0.5:  # D-Pad nach unten
-        lastPressed = "DOWN"
-    if u.get_axis(0) >= +0.5:  # D-Pad rechts
-        lastPressed = "RIGHT"
-    if u.get_axis(0) <= -0.5:  # D-Pad nach links
-        lastPressed = "LEFT"
-    if u.get_button(1):  # Button A - right red button - Rotate right
-        lastPressed = "A"
-    if u.get_button(2):  # Button B - left red button - Rotate left
-        lastPressed = "B"
-    if u.get_button(8):
-        lastPressed = "SELECT"
-    if u.get_button(9):
-        lastPressed = "START"
+    key_pressed = ""
+    if joystick.get_axis(1) <= -0.5:  # D-Pad nach oben
+        key_pressed = "UP"
+    if joystick.get_axis(1) >= +0.5:  # D-Pad nach unten
+        key_pressed = "DOWN"
+    if joystick.get_axis(0) >= +0.5:  # D-Pad rechts
+        key_pressed = "RIGHT"
+    if joystick.get_axis(0) <= -0.5:  # D-Pad nach links
+        key_pressed = "LEFT"
+    if joystick.get_button(1):  # Button A - right red button - Rotate right
+        key_pressed = "A"
+    if joystick.get_button(2):  # Button B - left red button - Rotate left
+        key_pressed = "B"
+    if joystick.get_button(8):
+        key_pressed = "SELECT"
+    if joystick.get_button(9):
+        # TODO start is not get_button(9)
+        key_pressed = "START"
+
+    return key_pressed
 
 
 # Overlay fixed and mobile Pixels
@@ -811,9 +812,9 @@ if __name__ == '__main__':
         print("How do you want to play Tetris without a joystick?")
         sys.exit()
 
-    j = pygame.joystick.Joystick(0)
-    j.init()
-    print(f'Initialized Joystick : {j.get_name()}')
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+    print(f'Initialized Joystick : {joystick.get_name()}')
 
     print("Loading Hiscores...", end=""),
     # hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
@@ -832,25 +833,25 @@ if __name__ == '__main__':
     moveTime = pygame.time.get_ticks()
     keyTime = moveTime
     keyPressTime = moveTime
+    key_press = ""
 
     while running:
         if paused:
             time.sleep(1)
             while paused:
                 pygame.event.pump()
-                if j.get_button(9):
-                    print("Game unpaused")
+                if joystick.get_button(9):
+                    print("Game resumed.")
                     snd_pause.play()
                     pygame.mixer.music.unpause()
                     time.sleep(1)
                     paused = False
-                    lastPressed = "NONE"
 
         if running:
             if pygame.time.get_ticks() > keyPressTime + keyPressTimeout:
-                getKeypress(j)
+                key_press = getKeypress(joystick)
             if pygame.time.get_ticks() > keyTime + keyTimeout:
-                keyAction()
+                keyAction(key_press)
                 keyTime = pygame.time.get_ticks()
             if pygame.time.get_ticks() > moveTime + moveTimeout:
                 timeAction()
