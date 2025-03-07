@@ -1,0 +1,13 @@
+[Unit]
+Description=RGB LED Table
+
+[Service]
+Type=simple
+Restart=always
+User=pi
+WorkingDirectory=/home/pi/rgb-led-table
+ExecStart=/home/pi/rgb-led-table/.venv/bin/python3 src/Tetris.py
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target
