@@ -204,51 +204,47 @@ def spawn():
         resetGame()
 
 
-def checkMoveLeftCollision():
+def check_move_collision(direction:str):
+    if direction == "left":
+        edge = 0
+        offset = -1
+    elif direction == "right":
+        edge = 11
+        offset = 1
+    else:
+        raise ValueError("direction not recognized")
+
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords
+
     tempPixels = [[0 for x in range(12)] for x in range(26)]
     for row in range(len(activeTet[activeTetRotation])):
         for col in range(len(activeTet[activeTetRotation][0])):
             if activeTet[activeTetRotation][row][col]:
                 tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
+
     for row in range(26):
-        if tempPixels[row][0] == 1:
+        if tempPixels[row][edge] == 1:
             return True
+
     for row in range(26):
         for col in range(12):
             if tempPixels[row][col] == 1:
-                if fixedPixels[row][col - 1] != gamecolors.BG_COLOR:
+                if fixedPixels[row][col + offset] != gamecolors.BG_COLOR:
                     return True
+
     return False
 
 
-def checkMoveRightCollision():
-    global fixedPixels, activeTet, activeTetRotation, activeTetCoords
-    tempPixels = [[0 for x in range(12)] for x in range(26)]
-    for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][0])):
-            if activeTet[activeTetRotation][row][col]:
-                tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
-    for row in range(26):
-        if tempPixels[row][11] == 1:
-            return True
-    for row in range(26):
-        for col in range(12):
-            if tempPixels[row][col] == 1:
-                if fixedPixels[row][col + 1] != gamecolors.BG_COLOR:
-                    return True
-    return False
+def move_side(direction:str):
+    if direction == "left":
+        offset = -1
+    elif direction == "right":
+        offset = 1
+    else:
+        raise ValueError("direction not recognized")
 
-
-def moveRight():
     global activeTetCoords
-    activeTetCoords[1] += 1
-    snd_click.play()
-
-
-def moveLeft():
-    global activeTetCoords
-    activeTetCoords[1] -= 1
+    activeTetCoords[1] += offset
     snd_click.play()
 
 
@@ -589,12 +585,12 @@ def keyAction(pressed_key):
         moveDown()
         keyPressTime = pygame.time.get_ticks()
     if pressed_key == "RIGHT":
-        if not checkMoveRightCollision():
-            moveRight()
+        if not check_move_collision(direction="right"):
+            move_side("right")
         keyPressTime = pygame.time.get_ticks()
     if pressed_key == "LEFT":
-        if not checkMoveLeftCollision():
-            moveLeft()
+        if not check_move_collision(direction="left"):
+            move_side("left")
         keyPressTime = pygame.time.get_ticks()
     if pressed_key == "A":
         rotateRight()
@@ -707,18 +703,8 @@ def dropDown():
     fixTile()
 
 
-def timeAction():
-    # Let gravity pull the mobile pixels down
-    global activeTetCoords, dropPoints
-    if checkMoveDownCollision():
-        fixTile()
-    else:
-        activeTetCoords[0] += 1
-        dropPoints += 1
-
-
 def moveDown():
-    global activeTetCoords, moveTime, dropPoints
+    global activeTetCoords, dropPoints
     if checkMoveDownCollision():
         fixTile()
     else:
@@ -837,7 +823,7 @@ if __name__ == '__main__':
                 keyAction(key_press)
                 keyTime = pygame.time.get_ticks()
             if pygame.time.get_ticks() > moveTime + moveTimeout:
-                timeAction()
+                moveDown()
                 moveTime = pygame.time.get_ticks()
         if running:
             buildScreen()
