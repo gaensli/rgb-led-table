@@ -452,7 +452,7 @@ def buildScreen():
             for col in range(len(playfield[row])):
                 display.set_pixel(row + 1, col + 1, playfield[row][col])
 
-        if activeTet is not tiles.EMPTY_TILE:
+        if activeTet != tiles.EMPTY_TILE:
             for row in range(len(activeTet[activeTetRotation])):
                 for col in range(len(activeTet[activeTetRotation][row])):
                     if activeTet[activeTetRotation][row][col]:
