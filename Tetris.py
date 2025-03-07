@@ -368,9 +368,12 @@ def fixTile():
                     playfield[x][y] = activeTet[4]
 
     activeTet = tiles.EMPTY_TILE
-    checkFinishedLines()
+    nof_cleared_lines = checkFinishedLines()
     snd_tilefix.play()
     time.sleep(moveTimeout / 1000.0)
+
+    calculate_points(nof_cleared_lines)
+    setLevelAndSpeed()
     Tetris_Points += ((21 + (3 * level)) - dropPoints)
     spawn()
     if running:
