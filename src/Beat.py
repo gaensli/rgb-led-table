@@ -70,10 +70,8 @@ def hsv2rgb(h: float, s: float, v: float) -> tuple[int, ...]:
 def rgb2hsv(r: int, g: int, b: int) -> tuple[float, ...]:
     return tuple(float(i) for i in colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0))
 
-mode = 'blue'
 
-
-def random_color() -> tuple[int, int, int]:
+def random_color(mode: str) -> tuple[int, int, int]:
     if mode == 'blue':
         r, g, b = hsv2rgb(random.uniform(0.35, 0.5), 1.0, 1.0)
     elif mode == 'green':
@@ -88,7 +86,7 @@ def random_color() -> tuple[int, int, int]:
     return r, g, b
 
 
-def change_pixels_random(display):
+def change_pixels_random(display, mode):
     # fade out on all pixels first
     fade_out = True
     fade_out_expo = 0.98
@@ -108,7 +106,7 @@ def change_pixels_random(display):
     # set 1 random pixel to random color
     row = random.randint(0, 23)
     col = random.randint(0, 11)
-    display.set_pixel(row, col, random_color())
+    display.set_pixel(row, col, random_color(mode))
     display.show()
     display.wait()
 
@@ -163,19 +161,16 @@ def brightness_decrease(display, step=1):
         display.show()
 
 
-def blink_color(display, blink_times=5, wait=0.5, color=(255, 0, 0)):
-    for i in range(blink_times):
-        # blink two times, then wait
+def blink_color(display, color=(255, 0, 0)):
+    display.pixels.clear()
+    # blink two times, then wait
+    for j in range(2):
+        display.pixels.set_pixels_rgb(color[0], color[1], color[2])
+        display.show()
+        display.wait()
         display.pixels.clear()
-        for j in range(2):
-            for k in range(display.pixels.count()):
-                display.pixels.set_pixel_rgb(k, color[0], color[1], color[2])
-            display.show()
-            time.sleep(0.08)
-            display.pixels.clear()
-            display.show()
-            time.sleep(0.08)
-        time.sleep(wait)
+        display.show()
+        display.wait()
 
 
 def appear_from_back(display, color=(255, 0, 0)):
@@ -316,19 +311,16 @@ def fade_in_out(display):
 def color_chase(display):
     h, s, v = 0.0, 1.0, 1.0
     for led in range(len(display)):
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        r, g, b = int(r * 255), int(g * 255), int(b * 255)
+        r, g, b = hsv2rgb(h, s, v)
         display.pixels.set_pixel_rgb(led, r, g, b)
         display.show()
 
         h += 1.0 / len(display)
-        if h > 1:
-            h = h - 1.0
+        h = h - 1.0 if h > 1 else h
 
 
 if __name__ == "__main__":
     display = RGB_Table()
-
     # rainbow_cycle_successive(display)
     # rainbow_cycle(display)
     # rainbow_colors(display)
@@ -337,10 +329,10 @@ if __name__ == "__main__":
     # fade_in_out(display)
 
     while True:
-        # change_pixels_random(display)
-        time_display(display)
+        change_pixels_random(display, "blue")
+        # time_display(display)
         # appear_from_back(display)
-    # for i in range(3):
-    #    blink_color(display, blink_times=1, color=(255, 0, 0))
-    #    blink_color(display, blink_times=1, color=(0, 255, 0))
-    #    blink_color(display, blink_times=1, color=(0, 0, 255))
+        # blink_color(display, color=(255, 0, 0))
+        # blink_color(display, color=(0, 255, 0))
+        # blink_color(display, color=(0, 0, 255))
+        # blink_color(display, color=(255, 255, 255))
