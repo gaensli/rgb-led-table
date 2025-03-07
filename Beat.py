@@ -185,8 +185,12 @@ def show_dots(color):
 def time_display():
     print("time_display")
 
-    fg_color = Adafruit_WS2801.RGB_to_color(255, 0, 0)
+    fg_color = Adafruit_WS2801.RGB_to_color(255, 30, 0)
+    # fg_color = Adafruit_WS2801.RGB_to_color(255, 0, 0)
     bg_color = Adafruit_WS2801.RGB_to_color(0, 0, 0)
+
+    # TODO random color for digits and dots.
+
     while True:
         pixels.set_pixels(bg_color)
 
