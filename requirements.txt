@@ -1,0 +1,2 @@
+pygame~=2.6.1
+Adafruit_WS2801>=1.0.1
