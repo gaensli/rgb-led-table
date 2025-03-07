@@ -235,14 +235,14 @@ def game_over():
     fadeInOut([255, 0, 0])
     # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
     # sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
-    entry = (playerName, Tetris_Points)
-    hiScores.append(entry)
+    # entry = (playerName, Tetris_Points)
+    # hiScores.append(entry)
 
-    def getKey(item):
-        return item[1]
+    # def getKey(item):
+    #    return item[1]
 
-    hiScores.sort(key=getKey, reverse=True)
-    pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
+    # hiScores.sort(key=getKey, reverse=True)
+    # pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
 
     # reset game for next round
     activeTet = tiles.EMPTY_TILE
@@ -477,15 +477,6 @@ if __name__ == '__main__':
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
     print(f'Initialized Joystick : {joystick.get_name()}')
-
-    print("Loading Hiscores...", end=""),
-    # hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
-    # hiScores.sort(key=getKey, reverse=True)
-    print("done!")
-    # print("Aktueller Hiscore: " + str(hiScores[0][1]) + " Punkte von " + str(hiScores[0][0]))
-    #  if len(sys.argv) > 1:
-    #        playerName = sys.argv[1]
-    #        print("Hi " + playerName + ", good luck!")
 
     print("Game of Tetris started!")
     fadeInOut([128, 128, 128])
