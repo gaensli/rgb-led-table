@@ -1,14 +1,13 @@
 #!/usr/bin/python
 
-import socket
-from TetrisClass import *
-from LounchTableClass import *
-from UDPClass import *
-from StartClass import *
-from TimeClass import *
-from ClearClass import *
-from BallClass import *
-from TestClass import *
+from App.TetrisClass import *
+from App.LounchTableClass import *
+from App.UDPClass import *
+from App.StartClass import *
+from App.TimeClass import *
+from App.ClearClass import *
+from App.BallClass import *
+from App.TestClass import *
 
 UDP_IP = '192.168.1.36'
 UDP_PORT = 5009
