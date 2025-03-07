@@ -347,6 +347,19 @@ def fixTile():
 
     spawn()
 
+def check_playfield_for_weird():
+    global playfield
+    id_set = set()
+
+    for row in range(len(playfield)):
+        for col in range(len(playfield[row])):
+            id = id(playfield[row][col])
+            if id not in id_set:
+                id_set.add(id)
+            else:
+                print("debug this!")
+
+
 
 def getKeypress(joystick):
     pygame.event.pump()
