@@ -222,9 +222,7 @@ def spawn():
 
     moveTime = pygame.time.get_ticks()
 
-    print(f"spawned {activeTet}")
     if check_move_xy_collision(target=activeTet, offset_x=0, offset_y=0):
-        print(f"collision {activeTet}")
         raise Exception("Game over")
 
 
@@ -285,7 +283,6 @@ def checkFinishedLines():
         time.sleep(0.1)
 
     lines_finished.reverse()
-    print(lines_finished)
     offset = 0
     for i in lines_finished:
         playfield.pop(i + offset)
