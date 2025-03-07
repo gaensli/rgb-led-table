@@ -333,6 +333,20 @@ def color_chase(display):
         h = h - 1.0 if h > 1 else h
 
 
+def colorfade(display):
+    h, s, v = 0.0, 1.0, 1.0
+
+    while True:
+        r, g, b = colorsys.hsv_to_rgb(h, s, v)
+        h += 0.005
+        if h > 1:
+            h -= 1
+
+        rgb = round(r * 255, 0), round(g * 255, 0), round(b * 255, 0)
+        display.fill(rgb)
+        display.show()
+
+
 if __name__ == "__main__":
     display = RGB_Table()
     
