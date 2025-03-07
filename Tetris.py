@@ -472,9 +472,7 @@ if __name__ == '__main__':
                 moveTime = pygame.time.get_ticks()
 
             buildScreen()
-
-            # Throttle down CPU load...
-            time.sleep(0.01)
+            time.sleep(0.01)        # Throttle down CPU load...
 
     except Exception as e:
         print(e)
