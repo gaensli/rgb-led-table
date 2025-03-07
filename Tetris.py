@@ -228,7 +228,7 @@ def move_side(direction:str):
 
 
 def game_over():
-    global activeTet, activeTetCoords, activeTetRotation, playfield, keyTimeout, keyTime, moveTimeout, moveTime, running, paused, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
+    global activeTet, activeTetCoords, activeTetRotation, playfield, keyTime, moveTimeout, moveTime, running, paused, Tetris_Points, level, keyPressTime, linescleared, dropPoints
 
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
@@ -254,11 +254,9 @@ def game_over():
     dropPoints = 0
     level = 1
     playfield = get_blank_playfield()
-    keyPressTimeout = 150
     keyPressTime = 0
-    keyTimeout = 100
     keyTime = 0
-    moveTimeout = 200
+    moveTimeout = 500
     moveTime = 0
     Tetris_Points = 0
     running = False
