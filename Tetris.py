@@ -191,10 +191,10 @@ def spawn():
 
     moveTime = pygame.time.get_ticks()
 
-    print(f"spawned {tile_name} at {activeTetCoords}")
+    print(f"spawned {tile_name} at {activeTetCoords}, {activeTetRotation}")
     if check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=0, offset_y=0):
         print(f"collision {activeTetCoords} {activeTetRotation} ")
-        game_over()
+        raise Exception("Game over")
 
 
 def check_temp_vs_fixed(temp_pixels):
@@ -236,16 +236,6 @@ def move_side(direction:str):
         snd_click.play()
 
 
-def game_over():
-    global Tetris_Points
-
-    print(f"Game over! {Tetris_Points} points.")
-    pygame.mixer.music.stop()
-    snd_gameover.play()
-    time.sleep(0.1)
-    fadeInOut(RED)
-    raise Exception("Game over")
-
 def rotate(cw: bool):
     global activeTetRotation
     # cw i.e. clock-wise i.e. right turn
@@ -281,7 +271,7 @@ def move_down():
 
 
 def setLevelAndSpeed():
-    global level, moveTimeout, Tetris_Points, linescleared
+    global level, moveTimeout, linescleared
     previous_level = level
     if linescleared <= 0:
         level = 1
@@ -293,11 +283,10 @@ def setLevelAndSpeed():
     if level > previous_level:
         snd_level.play()
     moveTimeout = (11 - level) * 50
-    print(f"Lines cleared: {linescleared} - Level: {level} - moveTimeout: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
 
 def checkFinishedLines():
-    global playfield, Tetris_Points, linescleared, level
+    global playfield
     lines_finished = []
     for row in range(len(playfield)):
         if all(map(lambda x: x != BLACK, playfield[row])):
@@ -354,6 +343,8 @@ def fixTile():
     calculate_points(nof_cleared_lines)
     Tetris_Points += ((21 + (3 * level)) - dropPoints)
     setLevelAndSpeed()
+    print(f"Lines cleared: {linescleared} - Level: {level} - moveTimeout: {moveTimeout} - Tetris Points: {Tetris_Points}")
+
     spawn()
 
 
@@ -459,7 +450,6 @@ if __name__ == '__main__':
 
     spawn()
     moveTime = keyTime = pygame.time.get_ticks()
-    key_press = ""
 
     try:
         while True:
@@ -500,5 +490,11 @@ if __name__ == '__main__':
 
     except Exception as e:
         pass
+
+    pygame.mixer.music.stop()
+    snd_gameover.play()
+    time.sleep(0.1)
+    fadeInOut(RED)
+    print(f"Game over! {Tetris_Points} points.")
 
     print("Tetris ended.")
