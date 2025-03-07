@@ -2,9 +2,8 @@
 import time
 import pygame
 import socket
-from lib import xbox_read
 
-from src.Beat import RGB_Table, colorfade, fade_in, heart_beat, RED, YELLOW, BLUE, GREEN, BLACK
+from src.Beat import RGB_Table, colorfade, heart_beat, RED, YELLOW, BLUE, GREEN, BLACK
 
 PIXEL_SIZE = 3
 
@@ -130,33 +129,46 @@ if __name__ == '__main__':
 
     pygame.mixer.pre_init(11025, -16, 2, 4096)
     pygame.init()
+    pygame.joystick.init()
+    clock = pygame.time.Clock()
 
     game = SimonSayGame(display)
-    game.simon_says()
+    # game.simon_says()
 
-    heart_beat(display, 10)
-    pixelStream(display, "192.168.178.33", 7766)
+    # heart_beat(display, 10)
+    # pixelStream(display, "192.168.178.33", 7766)
 
-    for event in xbox_read.event_stream(deadzone=12000):
-        if event.key == 'RT':
-            display.fill([255,255,255])
-            display.brightness = round(1.0 * event.value / 255, 2)
-            display.show()
+    joystick_count = pygame.joystick.get_count()
 
-        if event.key == 'LT':
-            colorfade(display)
+    if joystick_count == 0:
+        print("Error: Could not find any joysticks!")
+        exit(1)
 
-        color = ""
-        if event.key == 'A':
-            color = 'green'
-        if event.key == 'B':
-            color = 'red'
-        if event.key == 'X':
-            color = 'blue'
-        if event.key == 'Y':
-            color = 'yellow'
+    j = pygame.joystick.Joystick(0)
+    print(f"Initialized joystick: {j.get_name()}")
 
-        if color and event.value == 1:
-            game.simon_show_color(color, True)
-        elif color and event.value == 0:
-            game.simon_show_color('green', False)
+    while True:
+        for event in pygame.event.get():
+            print(event)
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 7: # 'RT'
+                    display.fill([128, 128, 128])
+                    display.brightness = 0.5 # round(1.0 * event.value / 255, 2)
+                    display.show()
+
+                if event.button == 6:   # 'LT'
+                    colorfade(display)
+
+            if event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYBUTTONUP:
+                color = ""
+                if event.button == 0:   # A
+                    color = 'green'
+                if event.button == 1: # B
+                    color = 'red'
+                if event.button == 3: # X
+                    color = 'blue'
+                if event.button == 4: # Y
+                    color = 'yellow'
+
+                if color:
+                    game.simon_show_color(color, event.type == pygame.JOYBUTTONDOWN)
