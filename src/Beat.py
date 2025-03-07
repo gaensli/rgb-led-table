@@ -48,6 +48,12 @@ class RGB_Table:
     def show(self):
         self.pixels.show()
 
+    def show_image(self, img):
+        for x, line in enumerate(img):
+            for y, pixel in enumerate(line):
+                self.set_pixel(x, y, pixel)
+        self.show()
+
     def __len__(self):
         return self.width * self.height
 
