@@ -208,6 +208,8 @@ def check_move_xy_collision(target, offset_x, offset_y):
                 y = activeTetCoords[1] + col + offset_y
                 if 0 <= x < len(temp_pixels) and  0 <= y < len(temp_pixels[row]):
                     temp_pixels[x][y] = target[row][col]
+                else:
+                    return True
     return check_temp_vs_fixed(temp_pixels)
 
 
