@@ -353,6 +353,68 @@ def colorfade(display):
         display.fill(rgb)
         display.show()
 
+        h += 0.005
+        h = h - 1.0 if h > 1 else h
+
+
+def heart_beat(display, repetitions):
+    BG = [0, 0, 0]
+    FG = [255, 0, 0]
+
+    heart1 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
+
+    heart2 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
+              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
+              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
+              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
+
+    for x in range(repetitions):
+        display.show_image(heart1)
+        time.sleep(0.1)
+        display.show_image(heart2)
+        time.sleep(0.1)
+        display.show_image(heart1)
+        time.sleep(0.1)
+        display.show_image(heart2)
+        time.sleep(0.5)
+
 
 if __name__ == "__main__":
     display = RGB_Table()

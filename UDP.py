@@ -89,65 +89,6 @@ def filter_pixel(pixel, brightness):
     return output_pixel
 
 
-def heart_beat(display, int):
-    BG = [0, 0, 0]
-    FG = [255, 0, 0]
-
-    heart1 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
-              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
-
-    heart2 = [[BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
-              [BG, BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG],
-              [BG, FG, FG, FG, FG, FG, FG, FG, BG, BG, BG, BG],
-              [BG, BG, FG, FG, FG, FG, FG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, FG, FG, FG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG],
-              [BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG, BG]]
-
-    for x in range(int):
-        display.show_image(heart1)
-        time.sleep(0.1)
-        display.show_image(heart2)
-        time.sleep(0.1)
-        display.show_image(heart1)
-        time.sleep(0.1)
-        display.show_image(heart2)
-        time.sleep(0.5)
-
-
 def pixelStream(display, UDP, PORT):
     FG = [255, 0, 0]
     BG = [0, 0, 0]
