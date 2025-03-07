@@ -2,7 +2,7 @@ import time
 import colorsys
 import random
 
-import Adafruit_WS2801
+from lib.WS2801 import WS2801Pixels, RGB_to_color, color_to_RGB
 import Adafruit_GPIO.SPI as SPI
 
 
@@ -25,7 +25,7 @@ class RGB_Table:
         # Alternatively specify a hardware SPI connection on /dev/spidev0.0:
         SPI_PORT = 0
         SPI_DEVICE = 0
-        self.pixels = Adafruit_WS2801.WS2801Pixels(self.width * self.height, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+        self.pixels = WS2801Pixels(self.width * self.height, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
         self._brightness = 1.0
         self._wait_time = 1 / 30
@@ -119,14 +119,16 @@ def change_pixels_random(display, mode):
 
 def wheel(pos: int) -> int:
     # Define the wheel function to interpolate between different hues.
-    if pos < 85:
-        return Adafruit_WS2801.RGB_to_color(pos * 3, 255 - pos * 3, 0)
-    elif pos < 170:
+    if 0 < pos < 85:
+        return RGB_to_color(pos * 3, 255 - pos * 3, 0)
+    elif 85 <= pos < 170:
         pos -= 85
-        return Adafruit_WS2801.RGB_to_color(255 - pos * 3, 0, pos * 3)
-    else:
+        return RGB_to_color(255 - pos * 3, 0, pos * 3)
+    elif 170 <= pos < 255:
         pos -= 170
-        return Adafruit_WS2801.RGB_to_color(0, pos * 3, 255 - pos * 3)
+        return RGB_to_color(0, pos * 3, 255 - pos * 3)
+    else:
+        return RGB_to_color(0, 0, 0)
 
 
 # Define rainbow cycle function to do a cycle of all hues.
