@@ -57,10 +57,8 @@ class ActiveTetrimon:
 
 
     def move_down(self):
-        global dropPoints
         if not check_move_xy_collision(target=self, offset_x=1, offset_y=0):
             self.coords[0] += 1
-            dropPoints += 1
         else:
             fixTile()
 
@@ -176,9 +174,7 @@ def get_blank_playfield(just_bool:bool = False):
 activeTet : ActiveTetrimon(I_TILE)
 level = 1
 linescleared = 0
-dropPoints = 0
 playfield = get_blank_playfield()
-keyPressTimeout = 125
 keyTimeout = 150
 keyTime = 0
 moveTimeout = 500
@@ -208,12 +204,11 @@ def fadeInOut(rgb):
 
 
 def spawn():
-    global activeTet, dropPoints, moveTime
+    global activeTet, moveTime
     str_list = [I_TILE, O_TILE, T_TILE, S_TILE, Z_TILE, J_TILE, L_TILE]
     random.shuffle(str_list)
 
     activeTet = ActiveTetrimon(str_list[0])
-    dropPoints = 0
     if activeTet.tetrimion.name == "I":
         activeTet.coords = [0, 3]
     elif activeTet.tetrimion.name == "J":
@@ -321,7 +316,7 @@ def calculate_points(nof_cleared_lines: int):
 
 
 def fixTile():
-    global playfield, activeTet, dropPoints, Tetris_Points, level
+    global playfield, activeTet, Tetris_Points, level
 
     # Add the active tetrimino to the fixed pixels with its color
     for row in range(len(activeTet.pixmap)):
@@ -337,7 +332,7 @@ def fixTile():
     snd_tilefix.play()
     nof_cleared_lines = checkFinishedLines()
     calculate_points(nof_cleared_lines)
-    Tetris_Points += ((21 + (3 * level)) - dropPoints)
+    Tetris_Points += (21 + (3 * level))
     setLevelAndSpeed()
     print(f"Lines cleared: {linescleared} - Level: {level} - moveTimeout: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
