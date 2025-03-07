@@ -460,14 +460,14 @@ def getKeypress(joystick):
         key_pressed = "RIGHT"
     if joystick.get_axis(0) <= -0.5:  # D-Pad nach links
         key_pressed = "LEFT"
-    if joystick.get_button(1):  # Button A - right red button - Rotate right
+
+    if joystick.get_button(0):  # Button A - right red button - Rotate right
         key_pressed = "A"
-    if joystick.get_button(2):  # Button B - left red button - Rotate left
+    if joystick.get_button(1):  # Button B - left red button - Rotate left
         key_pressed = "B"
-    if joystick.get_button(8):
+    if joystick.get_button(10):
         key_pressed = "SELECT"
-    if joystick.get_button(9):
-        # TODO start is not get_button(9)
+    if joystick.get_button(11):
         key_pressed = "START"
 
     return key_pressed
@@ -578,8 +578,8 @@ if __name__ == '__main__':
             time.sleep(1)
             while paused:
                 pygame.event.pump()
-                if joystick.get_button(9):
-                    print("Game resumed.")
+                if joystick.get_button(11):
+                    print("Game resumed")
                     snd_pause.play()
                     pygame.mixer.music.unpause()
                     time.sleep(1)
