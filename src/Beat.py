@@ -96,11 +96,11 @@ def rgb2hsv(r: int, g: int, b: int) -> tuple[float, ...]:
 
 def random_color(mode: str) -> tuple[int, int, int]:
     if mode == 'blue':
-        r, g, b = hsv2rgb(random.uniform(0.35, 0.5), 1.0, 1.0)
+        r, g, b = hsv2rgb(random.uniform(0.45, 0.7), 1.0, 1.0)
     elif mode == 'green':
-        r, g, b = hsv2rgb(random.uniform(0.68, 0.72), 1.0, 1.0)
+        r, g, b = hsv2rgb(random.uniform(0.3, 0.35), 1.0, 1.0)
     elif mode == 'red':
-        r, g, b = hsv2rgb(random.uniform(0.95, 0.99), 1.0, 1.0)
+        r, g, b = hsv2rgb(random.uniform(0.0, 0.15), 1.0, 1.0)
     elif mode == 'sat':
         r, g, b = hsv2rgb(random.random(), 1.0, 1.0)
     else:
