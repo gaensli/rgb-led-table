@@ -275,6 +275,10 @@ def gameOver():
     # sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
     entry = (playerName, Tetris_Points)
     hiScores.append(entry)
+
+    def getKey(item):
+        return item[1]
+
     hiScores.sort(key=getKey, reverse=True)
     pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
 
@@ -761,12 +765,11 @@ def getKeypress(u):
 
 # Overlay fixed and mobile Pixels
 def buildScreen():
-    global running, displayPixels, fixedPixels, activeTet, activeTetRotation, activeTetCoords
     if running:
         for row in range(24):
             for pixel in range(12):
                 display.set_pixel(row, pixel, fixedPixels[row + 2][pixel])
-        if activeTet != None:
+        if activeTet is not None:
             for row in range(len(activeTet[activeTetRotation])):
                 for col in range(len(activeTet[activeTetRotation][0])):
                     if activeTet[activeTetRotation][row][col]:
@@ -774,8 +777,6 @@ def buildScreen():
         display.show()
 
 
-def getKey(item):
-    return item[1]
 
 
 # Main loop to control the game
