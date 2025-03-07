@@ -301,19 +301,26 @@ def time_display(display):
     display.wait()
 
 
-def fade_in_out(display):
+def fade_in(display, rgb = (255, 255, 255)):
     display.brightness = 0.0
     while display.brightness < 1:
-        rgb = int(255 * display.brightness)
-        display.pixels.set_pixels_rgb(rgb, rgb, rgb)
+        r = int(rgb[0] * display.brightness)
+        g = int(rgb[1] * display.brightness)
+        b = int(rgb[2] * display.brightness)
+        display.pixels.set_pixels_rgb(r, g, b)
         display.show()
         display.wait()
         display.brightness += 0.01
+
+
+def fade_out(display, rgb = (255, 255, 255)):
     display._brightness = 1.0
 
     while display.brightness > 0:
-        rgb = int(255 * display.brightness)
-        display.pixels.set_pixels_rgb(rgb, rgb, rgb)
+        r = int(rgb[0] * display.brightness)
+        g = int(rgb[1] * display.brightness)
+        b = int(rgb[2] * display.brightness)
+        display.pixels.set_pixels_rgb(r, g, b)
         display.show()
         display.wait()
         display.brightness -= 0.01
@@ -355,7 +362,8 @@ if __name__ == "__main__":
     # rainbow_colors(display)
     # rgb_decrease(display)
     # color_chase(display)
-    # fade_in_out(display)
+    # fade_in(display)
+    # fade_out(display)
     # appear_from_back(display)
 
     while True:
