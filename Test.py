@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from datetime import datetime
 import time
 import colorsys
 
@@ -7,84 +8,109 @@ import Adafruit_WS2801
 import Adafruit_GPIO.SPI as SPI
 
 # Configure the count of pixels:
-PIXEL_COUNT = 288
+WIDTH = 24
+HEIGHT = 12
+PIXEL_COUNT = WIDTH * HEIGHT
+
+PIXEL_MAPPING = []
+for col in range(WIDTH):
+    col_map = []
+    for row in range(HEIGHT):
+        if row % 2 == 0:
+            col_map.append(row * 24 + col)
+        else:
+            col_map.append(((row + 1) * 24 - (col + 1)))
+    PIXEL_MAPPING.append(col_map)
 
 # Alternatively specify a hardware SPI connection on /dev/spidev0.0:
 SPI_PORT = 0
 SPI_DEVICE = 0
 pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+def show_digit(position, digit, color):
+    x_pos = [4, 8, 14, 18]
+    y_pos = 4
 
-numMatrix = [[0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0],
-             [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1],
-             [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1],
-             [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1],
-             [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
-             [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
-             [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
-             [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0]]
+    digit_to_pixel = {
+        '0': [[1, 1, 1],
+              [1, 0, 1],
+              [1, 0, 1],
+              [1, 0, 1],
+              [1, 1, 1]],
+        '1': [[0, 1, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1]],
+        '2': [[0, 1, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1]],
+        '3': [[1, 1, 1],
+              [0, 0, 1],
+              [0, 1, 1],
+              [0, 0, 1],
+              [1, 1, 1]],
+        '4': [[1, 0, 1],
+              [1, 0, 1],
+              [1, 1, 1],
+              [0, 0, 1],
+              [0, 0, 1]],
+        '5': [[1, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1],
+              [0, 0, 1],
+              [1, 1, 1]],
+        '6': [[1, 1, 1],
+              [1, 0, 0],
+              [1, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1]],
+        '7': [[1, 1, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1],
+              [0, 0, 1]],
+        '8': [[1, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1]],
+        '9': [[1, 1, 1],
+              [1, 0, 1],
+              [1, 1, 1],
+              [0, 0, 1],
+              [1, 1, 1]],
+    }
 
+    d = digit_to_pixel[digit]
+    for x in range(3):
+        for y in range(5):
+            if d[y][x]:
+                pixels.set_pixel(PIXEL_MAPPING[x + x_pos[position]][y_pos + 4 - y], color)
 
-def timedisplay():
-    print("timedisplay")
-    global pixels
-    global brightness
-    global numMatrix
-    brightness = 1
-    pixels = [[[0 for x in range(3)] for x in range(10)] for x in range(20)]
-    while 1:
-        timestring = time.strftime("%H%M")
-        zahleins = int(timestring[0])
-        for x in range(1, 9):
-            for y in range(1, 4):
-                if numMatrix[(x - 1)][(zahleins * 3) + (y - 1)] == 1:
-                    pixels[y][9 - x] = [255, 0, 0]
-                else:
-                    pixels[y][9 - x] = [0, 0, 0]
-        zahlzwei = int(timestring[1])
-        for x in range(1, 9):
-            for y in range(1, 4):
-                if numMatrix[(x - 1)][(zahlzwei * 3) + (y - 1)] == 1:
-                    pixels[y + 4][9 - x] = [255, 0, 0]
-                else:
-                    pixels[y + 4][9 - x] = [0, 0, 0]
-        zahldrei = int(timestring[2])
-        for x in range(1, 9):
-            for y in range(1, 4):
-                if numMatrix[(x - 1)][(zahldrei * 3) + (y - 1)] == 1:
-                    pixels[y + 11][9 - x] = [255, 0, 0]
-                else:
-                    pixels[y + 11][9 - x] = [0, 0, 0]
-        zahlvier = int(timestring[3])
-        for x in range(1, 9):
-            for y in range(1, 4):
-                if numMatrix[(x - 1)][(zahlvier * 3) + (y - 1)] == 1:
-                    pixels[y + 15][9 - x] = [255, 0, 0]
-                else:
-                    pixels[y + 15][9 - x] = [0, 0, 0]
-            # Punkte
-        timestring = time.strftime("%S")
-        if int(timestring) % 2 == 0:
-            pixels[9][2] = [255, 0, 0]
-            pixels[10][2] = [255, 0, 0]
-            pixels[9][3] = [255, 0, 0]
-            pixels[10][3] = [255, 0, 0]
+def show_dots(color):
+    pixels.set_pixel(PIXEL_MAPPING[12][5], color)
+    pixels.set_pixel(PIXEL_MAPPING[12][7], color)
 
-            pixels[9][6] = [255, 0, 0]
-            pixels[10][6] = [255, 0, 0]
-            pixels[9][7] = [255, 0, 0]
-            pixels[10][7] = [255, 0, 0]
-        else:
-            pixels[9][2] = [0, 0, 0]
-            pixels[10][2] = [0, 0, 0]
-            pixels[9][3] = [0, 0, 0]
-            pixels[10][3] = [0, 0, 0]
+def time_display():
+    print("time_display")
 
-            pixels[9][6] = [0, 0, 0]
-            pixels[10][6] = [0, 0, 0]
-            pixels[9][7] = [0, 0, 0]
-            pixels[10][7] = [0, 0, 0]
-        # drawsnake()
+    fg_color = Adafruit_WS2801.RGB_to_color(255, 0, 0)
+    bg_color = Adafruit_WS2801.RGB_to_color(0, 0, 0)
+    while True:
+        pixels.set_pixels(bg_color)
+
+        now = time.localtime()
+        timestring = time.strftime("%H%M%S", now)
+        for pos, digit in enumerate(timestring[0:4]):
+            show_digit(pos, digit, fg_color)
+
+        if int(timestring[5]) % 2 == 0:
+            show_dots(fg_color)
+
+        pixels.show()
         time.sleep(1)
 
 
@@ -125,6 +151,6 @@ def color_chase():
 
 
 if __name__ == '__main__':
-    fade_in_out()
-    color_chase()
-    timedisplay()
+    # fade_in_out()
+    # color_chase()
+    time_display()
