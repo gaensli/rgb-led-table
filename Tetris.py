@@ -231,8 +231,8 @@ def game_over():
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
     snd_gameover.play()
-    time.sleep(3)
-    fadeInOut([255, 0, 0])
+    time.sleep(0.1)
+    fadeInOut(RED)
     # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
     # sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
     # entry = (playerName, Tetris_Points)
