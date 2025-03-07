@@ -36,14 +36,16 @@ def hsv2rgb(h, s, v):
 def rgb2hsv(r, g, b):
     return tuple(i for i in colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0))
 
-mode = 'blue'
+mode = 'red'
 brightness = 1.0
 
 def random_color():
     if mode == 'blue':
-        r, g, b = hsv2rgb(random.uniform(0.3, 0.5), 1.0, 1.0)
+        r, g, b = hsv2rgb(random.uniform(0.35, 0.5), 1.0, 1.0)
     elif mode == 'green':
-        r, g, b = hsv2rgb(random.uniform(0.65, 0.75), 1.0, 1.0)
+        r, g, b = hsv2rgb(random.uniform(0.68, 0.72), 1.0, 1.0)
+    elif mode == 'red':
+        r, g, b = hsv2rgb(random.uniform(0.95, 0.99), 1.0, 1.0)
     elif mode == 'sat':
         r, g, b = hsv2rgb(random.random(), 1.0, 1.0)
     else:
@@ -66,6 +68,21 @@ def init_screen_for_random():
 def change_pixels_random():
     row = random.randint(0, 23)
     col = random.randint(0, 11)
+    fade_out = True
+    fade_out_expo = 0.98
+    if fade_out:
+        for i in range(pixels.count()):
+            r, g, b = Adafruit_WS2801.color_to_RGB(pixels.get_pixel(i))
+            if fade_out_expo:
+                r = int(r * fade_out_expo)
+                g = int(g * fade_out_expo)
+                b = int(b * fade_out_expo)
+            else:
+                r = max(0, r - 1)
+                g = max(0, g - 1)
+                b = max(0, b - 1)
+            pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(r, g, b))
+
     pixels.set_pixel(PIXEL_MAPPING[row][col], random_color())
     pixels.show()
 
@@ -305,6 +322,7 @@ if __name__ == "__main__":
     init_screen_for_random()
     while True:
         change_pixels_random()
+        time.sleep(0.01)
 
     # time_display()
     # appear_from_back()
