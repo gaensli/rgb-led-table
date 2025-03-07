@@ -317,29 +317,42 @@ def setLevelAndSpeed():
 
 def checkFinishedLines():
     global playfield, Tetris_Points, linescleared, level
-    linesFinished = 0
+    lines_finished = []
     for row in range(len(playfield)):
         if all(map(lambda x: x != BLACK, playfield[row])):
-            linesFinished += 1
-            playfield[row] = [BLACK] * 10
-            buildScreen()
-            # TODO wait a bit time
-            for mrow in range(row, 0, -1):
-                playfield[mrow] = playfield[mrow - 1]
-            snd_linekill.play()
-            buildScreen()
+            lines_finished.append(row)
 
-    if linesFinished == 1:
+    for _ in range(3):
+        for i in lines_finished:
+            playfield[i] = [WHITE] * len(playfield[i])
+        buildScreen()
+        time.sleep(0.1)
+        for i in lines_finished:
+            playfield[i] = [BLACK] * len(playfield[i])
+        buildScreen()
+        time.sleep(0.1)
+
+    for i in lines_finished:
+        for mrow in range(i, 0, -1):
+            playfield[mrow] = playfield[mrow - 1]
+        snd_linekill.play()
+        buildScreen()
+
+    return len(lines_finished)
+
+
+def calculate_points(nof_cleared_lines: int):
+    global linescleared, level, Tetris_Points
+    if nof_cleared_lines == 1:
         Tetris_Points += 40 * level
-    elif linesFinished == 2:
+    elif nof_cleared_lines == 2:
         Tetris_Points += 100 * level
-    elif linesFinished == 3:
+    elif nof_cleared_lines == 3:
         Tetris_Points += 300 * level
-    elif linesFinished == 4:
+    elif nof_cleared_lines == 4:
         Tetris_Points += 1200 * level
 
-    linescleared += linesFinished
-    setLevelAndSpeed(linescleared)
+    linescleared += nof_cleared_lines
 
 
 def fixTile():
