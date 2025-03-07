@@ -1,6 +1,8 @@
 # Simple demo of the WS2801/SPI-like addressable RGB LED lights.
 import time
 import colorsys
+import random
+
 
 # Import the WS2801 module.
 import Adafruit_WS2801
@@ -27,6 +29,46 @@ SPI_PORT = 0
 SPI_DEVICE = 0
 pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+def hsv2rgb(h, s, v):
+    return tuple(int(i * 255) for i in colorsys.hsv_to_rgb(h, s, v))
+
+
+def rgb2hsv(r, g, b):
+    return tuple(i for i in colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0))
+
+mode = 'blue'
+brightness = 1.0
+
+def random_color():
+    if mode == 'blue':
+        r, g, b = hsv2rgb(random.uniform(0.3, 0.5), 1.0, 1.0)
+    elif mode == 'green':
+        r, g, b = hsv2rgb(random.uniform(0.65, 0.75), 1.0, 1.0)
+    elif mode == 'sat':
+        r, g, b = hsv2rgb(random.random(), 1.0, 1.0)
+    else:
+        r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+
+    r = int(r * brightness)
+    g = int(g * brightness)
+    b = int(b * brightness)
+
+    return Adafruit_WS2801.RGB_to_color(r, g, b)
+
+
+def init_screen_for_random():
+    for row in range(24):
+        for col in range(12):
+            pixels.set_pixel(PIXEL_MAPPING[row][col], random_color())
+    pixels.show()
+
+
+def change_pixels_random():
+    row = random.randint(0, 23)
+    col = random.randint(0, 11)
+    pixels.set_pixel(PIXEL_MAPPING[row][col], random_color())
+    pixels.show()
+
 
 # Define the wheel function to interpolate between different hues.
 def wheel(pos):
@@ -41,7 +83,7 @@ def wheel(pos):
 
 
 # Define rainbow cycle function to do a cycle of all hues.
-def rainbow_cycle_successive(pixels, wait=0.1):
+def rainbow_cycle_successive(wait=0.1):
     for i in range(pixels.count()):
         # tricky math! we use each pixel as a fraction of the full 96-color wheel
         # (that is the i / strip.numPixels() part)
@@ -53,7 +95,7 @@ def rainbow_cycle_successive(pixels, wait=0.1):
             time.sleep(wait)
 
 
-def rainbow_cycle(pixels, wait=0.005):
+def rainbow_cycle(wait=0.005):
     for j in range(10):  # one cycle of all 256 colors in the wheel
         for i in range(pixels.count()):
             pixels.set_pixel(i, wheel(((i * 256 // pixels.count()) + j) % 256))
@@ -62,7 +104,7 @@ def rainbow_cycle(pixels, wait=0.005):
             time.sleep(wait)
 
 
-def rainbow_colors(pixels, wait=0.05):
+def rainbow_colors(wait=0.05):
     for j in range(256):  # one cycle of all 256 colors in the wheel
         for i in range(pixels.count()):
             pixels.set_pixel(i, wheel((256 // pixels.count() + j) % 256))
@@ -71,7 +113,7 @@ def rainbow_colors(pixels, wait=0.05):
             time.sleep(wait)
 
 
-def brightness_decrease(pixels, wait=0.01, step=1):
+def brightness_decrease(wait=0.01, step=1):
     for j in range(int(256 // step)):
         for i in range(pixels.count()):
             r, g, b = pixels.get_pixel_rgb(i)
@@ -84,7 +126,7 @@ def brightness_decrease(pixels, wait=0.01, step=1):
             time.sleep(wait)
 
 
-def blink_color(pixels, blink_times=5, wait=0.5, color=(255, 0, 0)):
+def blink_color(blink_times=5, wait=0.5, color=(255, 0, 0)):
     for i in range(blink_times):
         # blink two times, then wait
         pixels.clear()
@@ -99,8 +141,7 @@ def blink_color(pixels, blink_times=5, wait=0.5, color=(255, 0, 0)):
         time.sleep(wait)
 
 
-def appear_from_back(pixels, color=(255, 0, 0)):
-    pos = 0
+def appear_from_back(color=(255, 0, 0)):
     for i in range(pixels.count()):
         for j in reversed(range(i, pixels.count())):
             pixels.clear()
@@ -254,24 +295,22 @@ def color_chase():
 
 
 if __name__ == "__main__":
-    # Clear all the pixels to turn them off.
-    pixels.clear()
-    pixels.show()  # Make sure to call show() after changing any pixels!
+    pixels.clear()      # Clear all the pixels to turn them off.
+    pixels.show()       # Make sure to call show() after changing any pixels!
 
-    # rainbow_cycle_successive(pixels, wait=0.1)
-    rainbow_cycle(pixels, wait=0.01)
+    # rainbow_cycle_successive(wait=0.1)
+    # rainbow_cycle(wait=0.01)
+    # brightness_decrease()
 
-    brightness_decrease(pixels)
+    init_screen_for_random()
+    while True:
+        change_pixels_random()
 
-    time_display()
-
-    # appear_from_back(pixels)
-
+    # time_display()
+    # appear_from_back()
     # for i in range(3):
-    #    blink_color(pixels, blink_times=1, color=(255, 0, 0))
-    #    blink_color(pixels, blink_times=1, color=(0, 255, 0))
-    #    blink_color(pixels, blink_times=1, color=(0, 0, 255))
-
-    # rainbow_colors(pixels)
-
-    # brightness_decrease(pixels)
+    #    blink_color(blink_times=1, color=(255, 0, 0))
+    #    blink_color(blink_times=1, color=(0, 255, 0))
+    #    blink_color(blink_times=1, color=(0, 0, 255))
+    # rainbow_colors()
+    # brightness_decrease()
