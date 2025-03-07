@@ -263,20 +263,19 @@ def game_over():
     paused = False
 
 
-def get_next_rotation(cw: bool):
+def rotate(cw: bool):
+    global activeTetRotation
     # cw i.e. clock-wise i.e. right turn
     # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
     if cw:
         next_rotation_lookup = [1, 2, 3, 0]
     else:
         next_rotation_lookup = [3, 0, 1, 2]
-    return next_rotation_lookup[activeTetRotation]
 
-
-def rotate(cw: bool):
-    global activeTetRotation
-    if not check_move_xy_collision(target=activeTet[get_next_rotation(cw)], offset_x=0, offset_y=0):
-        activeTetRotation = get_next_rotation(cw)
+    if not check_move_xy_collision(target=activeTet[next_rotation_lookup[activeTetRotation]], offset_x=0, offset_y=0):
+        # cw i.e. clock-wise i.e. right turn
+        # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+        activeTetRotation = next_rotation_lookup[activeTetRotation]
     snd_click.play()
 
 
