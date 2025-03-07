@@ -258,313 +258,166 @@ def gameOver():
     paused = False
 
 
+def get_next_rotation(cw: bool):
+    # cw i.e. clock-wise i.e. right turn
+    # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+    if cw:
+        next_rotation_lookup = [1, 2, 3, 0]
+        return next_rotation_lookup[activeTetRotation]
+    else:
+        next_rotation_lookup = [1, 2, 3, 0]
+        return next_rotation_lookup[activeTetRotation]
+
+
+def check_no_collision(cw: bool):
+    # cw i.e. clock-wise i.e. right turn
+    # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+    next_rotation = get_next_rotation(cw)
+
+    temp_pixels = [[0 for x in range(12)] for x in range(26)]
+    for row in range(len(activeTet[next_rotation])):
+        for col in range(len(activeTet[next_rotation][0])):
+            if activeTet[next_rotation][row][col]:
+                temp_pixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 2 + col] = 1
+    for row in range(26):
+        for col in range(12):
+            if temp_pixels[row][col]:
+                if fixedPixels[row][col] != gamecolors.BG_COLOR:
+                    return False
+    return True
+
+
 def rotateLeft():
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
+    next_rotation = get_next_rotation(False)
+
+    if activeTet == tiles.O_TILE:
+        return
     if activeTet == tiles.I_TILE:
-        validMove = True
         if activeTetRotation == 0:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 23:
-                validMove = False
-            else:
-                for row in range(len(activeTet[3])):
-                    for col in range(len(activeTet[3][0])):
-                        if activeTet[3][row][col]:
-                            tempPixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 3
-                activeTetCoords[1] += 1
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] += 2
                 activeTetCoords[0] -= 1
-        elif activeTetRotation == 3:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
-            if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:  # hib
-                validMove = False
-            else:
-                for row in range(len(activeTet[2])):
-                    for col in range(len(activeTet[2][0])):
-                        if activeTet[2][row][col]:
-                            tempPixels[activeTetCoords[0] + 2 + row][activeTetCoords[1] - 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 2
-                activeTetCoords[1] -= 1
+        elif activeTetRotation == 1:
+            if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] -= 2
                 activeTetCoords[0] += 2
         elif activeTetRotation == 2:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 24:
-                validMove = False
-            else:
-                for row in range(len(activeTet[1])):
-                    for col in range(len(activeTet[1][0])):
-                        if activeTet[1][row][col]:
-                            tempPixels[activeTetCoords[0] - 2 + row][activeTetCoords[1] + 2 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 1
-                activeTetCoords[1] += 2
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] += 1
                 activeTetCoords[0] -= 2
-        elif activeTetRotation == 1:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
-            if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
-                validMove = False
-            else:
-                for row in range(len(activeTet[0])):
-                    for col in range(len(activeTet[0][0])):
-                        if activeTet[0][row][col]:
-                            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] - 2 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 0
-                activeTetCoords[1] -= 2
-                activeTetCoords[0] += 1
-    elif activeTet == tiles.J_TILE or activeTet == tiles.L_TILE or activeTet == tiles.S_TILE or activeTet == tiles.T_TILE or activeTet == tiles.Z_TILE:
-        validMove = True
-        if activeTetRotation == 0:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
-            if activeTetCoords[0] > 23:
-                validMove = False
-            else:
-                for row in range(len(activeTet[3])):
-                    for col in range(len(activeTet[3][0])):
-                        if activeTet[3][row][col]:
-                            tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 3
-                activeTetCoords[1] += 0
-                activeTetCoords[0] -= 0
         elif activeTetRotation == 3:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
-            if activeTetCoords[1] > 7:
-                validMove = False
-            else:
-                for row in range(len(activeTet[2])):
-                    for col in range(len(activeTet[2][0])):
-                        if activeTet[2][row][col]:
-                            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 2
-                activeTetCoords[1] -= 0
+            if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] -= 1
+                activeTetCoords[0] += 1
+    else:
+        if activeTetRotation == 0:
+            if activeTetCoords[0] > 23:
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] += 1
+                activeTetCoords[0] -= 0
+        elif activeTetRotation == 1:
+            if activeTetCoords[1] < 1:
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
         elif activeTetRotation == 2:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 24:
-                validMove = False
-            else:
-                for row in range(len(activeTet[1])):
-                    for col in range(len(activeTet[1][0])):
-                        if activeTet[1][row][col]:
-                            tempPixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 1
-                activeTetCoords[1] += 1
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] += 0
                 activeTetCoords[0] -= 1
-        elif activeTetRotation == 1:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
-            if activeTetCoords[1] < 1:
-                validMove = False
-            else:
-                for row in range(len(activeTet[0])):
-                    for col in range(len(activeTet[0][0])):
-                        if activeTet[0][row][col]:
-                            tempPixels[activeTetCoords[0] + 0 + row][activeTetCoords[1] - 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 0
-                activeTetCoords[1] -= 1
+        elif activeTetRotation == 3:
+            if activeTetCoords[1] > 7:
+                return
+            if check_no_collision(False):
+                activeTetRotation = next_rotation
+                activeTetCoords[1] -= 0
                 activeTetCoords[0] += 0
-    elif activeTet == tiles.O_TILE:
-        return False
     snd_click.play()
 
 
 def rotateRight():
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
+    next_rotation = get_next_rotation(True)
+
+    if activeTet == tiles.O_TILE:
+        return
     if activeTet == tiles.I_TILE:
-        validMove = True
         if activeTetRotation == 0:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 23:
-                validMove = False
-            else:
-                for row in range(len(activeTet[1])):
-                    for col in range(len(activeTet[1][0])):
-                        if activeTet[1][row][col]:
-                            tempPixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + 2 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 1
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] += 2
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 1:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[1] < 2 or activeTetCoords[1] > 8:
-                validMove = False
-            else:
-                for row in range(len(activeTet[2])):
-                    for col in range(len(activeTet[2][0])):
-                        if activeTet[2][row][col]:
-                            tempPixels[activeTetCoords[0] + 2 + row][activeTetCoords[1] - 2 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 2
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] -= 2
                 activeTetCoords[0] += 2
         elif activeTetRotation == 2:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 24:
-                validMove = False
-            else:
-                for row in range(len(activeTet[3])):
-                    for col in range(len(activeTet[3][0])):
-                        if activeTet[3][row][col]:
-                            tempPixels[activeTetCoords[0] - 2 + row][activeTetCoords[1] + 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 3
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 2
         elif activeTetRotation == 3:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[1] < 1 or activeTetCoords[1] > 7:
-                validMove = False
-            else:
-                for row in range(len(activeTet[0])):
-                    for col in range(len(activeTet[0][0])):
-                        if activeTet[0][row][col]:
-                            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] - 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 0
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
-    elif activeTet == tiles.J_TILE or activeTet == tiles.L_TILE or activeTet == tiles.S_TILE or activeTet == tiles.T_TILE or activeTet == tiles.Z_TILE:
-        validMove = True
+    else:
         if activeTetRotation == 0:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 23:
-                validMove = False
-            else:
-                for row in range(len(activeTet[1])):
-                    for col in range(len(activeTet[1][0])):
-                        if activeTet[1][row][col]:
-                            tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 1
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] += 1
                 activeTetCoords[0] -= 0
         elif activeTetRotation == 1:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[1] < 1:
-                validMove = False
-            else:
-                for row in range(len(activeTet[2])):
-                    for col in range(len(activeTet[2][0])):
-                        if activeTet[2][row][col]:
-                            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] - 1 + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 2
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] -= 1
                 activeTetCoords[0] += 1
         elif activeTetRotation == 2:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[0] > 24:
-                validMove = False
-            else:
-                for row in range(len(activeTet[3])):
-                    for col in range(len(activeTet[3][0])):
-                        if activeTet[3][row][col]:
-                            tempPixels[activeTetCoords[0] - 1 + row][activeTetCoords[1] + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 3
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] += 0
                 activeTetCoords[0] -= 1
         elif activeTetRotation == 3:
-            tempPixels = [[0 for x in range(12)] for x in range(26)]
             if activeTetCoords[1] > 7:
-                validMove = False
-            else:
-                for row in range(len(activeTet[0])):
-                    for col in range(len(activeTet[0][0])):
-                        if activeTet[0][row][col]:
-                            tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
-                for row in range(26):
-                    for col in range(12):
-                        if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                                validMove = False
-            if validMove:
-                activeTetRotation = 0
+                return
+            if check_no_collision(True):
+                activeTetRotation = next_rotation
                 activeTetCoords[1] -= 0
                 activeTetCoords[0] += 0
-    elif activeTet == tiles.O_TILE:
-        return False
     snd_click.play()
 
 
