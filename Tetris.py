@@ -18,30 +18,28 @@ class ActiveTetrimon:
         self.rotation = 0
         self.pixmap = tetrimion.pixmap[self.rotation]
 
-    def move_side(self, direction: str):
-        if direction == "left":
+    def move_side(self, direction: bool):
+        # direction is True for move to the left
+        # direction is False for move to the right
+        if direction:
             offset_y = -1
-        elif direction == "right":
-            offset_y = 1
         else:
-            raise ValueError("direction not recognized")
+            offset_y = 1
 
         if not check_move_xy_collision(target=self, offset_x=0, offset_y=offset_y):
             self.coords[1] += offset_y
             snd_click.play()
 
     def rotate(self, cw: bool):
-        # cw i.e. clock-wise i.e. right turn
-        # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+        # cw is True: clock-wise i.e. right turn
+        # cw is False: counter-clock-wise i.e. left turn
         if cw:
             next_rotation_lookup = [1, 2, 3, 0]
         else:
             next_rotation_lookup = [3, 0, 1, 2]
-
         self.pixmap = self.tetrimion.pixmap[next_rotation_lookup[self.rotation]]
+
         if not check_move_xy_collision(target=self, offset_x=0, offset_y=0):
-            # cw i.e. clock-wise i.e. right turn
-            # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
             self.rotation = next_rotation_lookup[self.rotation]
             self.pixmap = self.tetrimion.pixmap[self.rotation]
             snd_click.play()
@@ -54,7 +52,6 @@ class ActiveTetrimon:
             buildScreen()
             time.sleep(0.01)
         fixTile()
-
 
     def move_down(self):
         if not check_move_xy_collision(target=self, offset_x=1, offset_y=0):
@@ -367,10 +364,10 @@ def keyAction(pressed_key):
         activeTet.drop_down()
     if pressed_key == "DOWN":
         activeTet.move_down()
-    if pressed_key == "RIGHT":
-        activeTet.move_side("right")
     if pressed_key == "LEFT":
-        activeTet.move_side("left")
+        activeTet.move_side(True)
+    if pressed_key == "RIGHT":
+        activeTet.move_side(False)
     if pressed_key == "A":
         activeTet.rotate(True)
     if pressed_key == "B":
