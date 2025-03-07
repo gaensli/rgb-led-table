@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import math, sys
 import time
 import colorsys
-import subprocess
 import pygame
 import socket
 from lib import xbox_read
@@ -11,7 +9,7 @@ PIXEL_SIZE = 3
 gamma = bytearray(256)
 pixels = [[[255 for x in range(3)] for x in range(12)] for x in range(24)]
 brightness = 0.0
-spidev = file("/dev/spidev0.0", "wb")
+spidev = open("/dev/spidev0.0", "wb")
 
 
 def draw():
@@ -31,8 +29,7 @@ def showImage(img):
 
 
 def turnOff():
-    print
-    "Turning all LEDs off"
+    print("Turning all LEDs off")
     global pixels
     global brightness
     pixels = [[[0 for x in range(3)] for x in range(10)] for x in range(20)]
@@ -41,8 +38,7 @@ def turnOff():
 
 
 def fadeIn():
-    print
-    "Fading in..."
+    print("Fading in...")
     global pixels
     global brightness
     brightness = 0
@@ -296,12 +292,10 @@ def pixelStream(UDP, PORT):
 
 
 if __name__ == '__main__':
-    print
-    "RGB-Tisch gestartet"
+    print("RGB-Tisch gestartet")
     for i in range(256):
         gamma[i] = int(pow(float(i) / 255.0, 2.5) * 255.0)
-    print
-    "Gamma-Korrektur vorgeladen"
+    print("Gamma-Korrektur vorgeladen")
     pygame.mixer.pre_init(11025, -16, 2, 4096)
     pygame.init()
     fadeIn()
@@ -346,13 +340,13 @@ for event in xbox_read.event_stream(deadzone=12000):
     #    if event.key=='RB' and event.value==1:
     #       if brightness < 1:
     #               brightness += 0.1
-    #               print "Helligkeit um 10% erhoeht - Aktuell:",round(brightness*100,0),"%."
+    #               print("Helligkeit um 10% erhoeht - Aktuell:",round(brightness*100,0),"%.")
     #               draw()
     #               time.sleep(0.1)
     #    elif event.key=='LB' and event.value==1:
     #       if brightness > .09:
     #               brightness -= 0.1
-    #               print "Helligkeit um 10% erniedrigt - Aktuell:",round(brightness*100,0),"%."
+    #               print("Helligkeit um 10% erniedrigt - Aktuell:",round(brightness*100,0),"%.")
     #               draw()
     #               time.sleep(0.1)
     if event.key == 'RT':
