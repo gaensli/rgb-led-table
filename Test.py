@@ -27,6 +27,7 @@ SPI_PORT = 0
 SPI_DEVICE = 0
 pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+
 def show_digit(position, digit, color):
     x_pos = [4, 8, 14, 18]
     y_pos = 4
@@ -90,9 +91,11 @@ def show_digit(position, digit, color):
             if d[y][x]:
                 pixels.set_pixel(PIXEL_MAPPING[x + x_pos[position]][y_pos + 4 - y], color)
 
+
 def show_dots(color):
     pixels.set_pixel(PIXEL_MAPPING[12][5], color)
     pixels.set_pixel(PIXEL_MAPPING[12][7], color)
+
 
 def time_display():
     print("time_display")
@@ -142,7 +145,7 @@ def color_chase():
     h, s, v = 0.0, 1.0, 1.0
     for led in range(pixels.count()):
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        r, g, b  = int(r * 255), int(g * 255), int(b * 255)
+        r, g, b = int(r * 255), int(g * 255), int(b * 255)
         pixels.set_pixel(led, Adafruit_WS2801.RGB_to_color(r, g, b))
         pixels.show()
 
