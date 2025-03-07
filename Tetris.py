@@ -116,9 +116,9 @@ class tiles:
 
 def get_blank_playfield(just_bool:bool = False):
     if just_bool:
-        return [[0] * 10 for _ in range(20)]
+        return [[0] * 10 for _ in range(22)]
     else:
-        return [[BLACK] * 10 for _ in range(20)]
+        return [[BLACK] * 10 for _ in range(22)]
 
 
 ####Global variables
