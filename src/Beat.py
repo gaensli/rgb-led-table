@@ -28,8 +28,7 @@ class RGB_Table:
         self.pixels = Adafruit_WS2801.WS2801Pixels(self.width * self.height, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
         self._brightness = 1.0
-
-        self.wait_time = 1 / 30
+        self._wait_time = 1 / 30
 
         self.pixels.clear()  # Clear all the pixels to turn them off.
         self.pixels.show()  # Make sure to call show() after changing any pixels!
@@ -53,7 +52,14 @@ class RGB_Table:
         return self.width * self.height
 
     def wait(self):
-        time.sleep(self.wait_time)
+        time.sleep(self._wait_time)
+
+    @property
+    def wait_time(self):
+        return self._wait_time
+    @wait_time.setter
+    def wait_time(self, value):
+        self._wait_time = value
 
     @property
     def brightness(self):
