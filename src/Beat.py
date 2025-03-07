@@ -5,6 +5,13 @@ import random
 from lib.WS2801 import WS2801Pixels, RGB_to_color, color_to_RGB
 import Adafruit_GPIO.SPI as SPI
 
+RED = [255, 0, 0]
+GREEN = [0, 255, 0]
+BLUE = [0, 0, 255]
+YELLOW = [255, 255, 0]
+WHITE = [255, 255, 255]
+BLACK = [0, 0, 0]
+
 
 class RGB_Table:
     def __init__(self):

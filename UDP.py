@@ -4,7 +4,7 @@ import pygame
 import socket
 from lib import xbox_read
 
-from src.Beat import RGB_Table, colorfade, fade_in
+from src.Beat import RGB_Table, colorfade, fade_in, heart_beat, RED, YELLOW, BLUE, GREEN, BLACK
 
 PIXEL_SIZE = 3
 
