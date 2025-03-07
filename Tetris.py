@@ -299,20 +299,20 @@ def move_down():
         dropPoints += 1
 
 
-def setLevelAndSpeed(lines):
-    global level, moveTimeout, Tetris_Points
+def setLevelAndSpeed():
+    global level, moveTimeout, Tetris_Points, linescleared
     previous_level = level
     if linescleared <= 0:
         level = 1
-    elif 1 <= lines <= 90:
-        level = 1 + ((lines - 1) / 10)
-    elif lines >= 91:
+    elif 1 <= linescleared <= 90:
+        level = 1 + ((linescleared - 1) / 10)
+    elif linescleared >= 91:
         level = 10
 
     if level > previous_level:
         snd_level.play()
     moveTimeout = (11 - level) * 50
-    print(f"Lines cleared: {lines} - Level: {level} - moveTime: {moveTimeout} - Tetris Points: {Tetris_Points}")
+    print(f"Lines cleared: {linescleared} - Level: {level} - moveTime: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
 
 def checkFinishedLines():
