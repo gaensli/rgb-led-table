@@ -731,7 +731,7 @@ def buildScreen():
 
         if activeTet is not None:
             for row in range(len(activeTet[activeTetRotation])):
-                for col in range(len(activeTet[activeTetRotation][0])):
+                for col in range(len(activeTet[activeTetRotation][row])):
                     if activeTet[activeTetRotation][row][col]:
                         display.set_pixel(activeTetCoords[0] - 2 + row, activeTetCoords[1] + col, activeTet[4])
         display.show()
