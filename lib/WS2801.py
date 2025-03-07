@@ -94,8 +94,8 @@ class WS2801Pixels(object):
         """
         assert n >= 0 and n < self._count, 'Pixel n outside the count of pixels!'
         self._pixels[n*3]   = r & 0xFF
-        self._pixels[n*3+1] = g & 0xFF
-        self._pixels[n*3+2] = b & 0xFF
+        self._pixels[n*3+1] = b & 0xFF
+        self._pixels[n*3+2] = g & 0xFF
 
     def get_pixel(self, n):
         """Retrieve the 24-bit RGB color of the specified pixel n."""
@@ -107,7 +107,7 @@ class WS2801Pixels(object):
         specified pixel n.  Will return a 3-tuple of red, green, blue data.
         """
         assert n >= 0 and n < self._count, 'Pixel n outside the count of pixels!'
-        return (self._pixels[n*3], self._pixels[n*3+1], self._pixels[n*3+2])
+        return (self._pixels[n*3], self._pixels[n*3+2], self._pixels[n*3+1])
 
     def set_pixels(self, color=0):
         """Set all pixels to the provided 24-bit RGB color value.  Note you
