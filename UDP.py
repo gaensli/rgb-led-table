@@ -7,7 +7,7 @@ from lib import xbox_read
 
 PIXEL_SIZE = 3
 gamma = bytearray(256)
-pixels = [[[255 for x in range(3)] for x in range(12)] for x in range(24)]
+pixels = [[[255 for _ in range(3)] for _ in range(12)] for _ in range(24)]
 brightness = 0.0
 spidev = open("/dev/spidev0.0", "wb")
 
@@ -32,7 +32,7 @@ def turnOff():
     print("Turning all LEDs off")
     global pixels
     global brightness
-    pixels = [[[0 for x in range(3)] for x in range(10)] for x in range(20)]
+    pixels = [[[0 for _ in range(3)] for _ in range(10)] for _ in range(20)]
     brightness = 1
     draw()
 
@@ -112,7 +112,7 @@ def simonSays():
 
 def simonOff():
     global pixels
-    pixels = [[[0 for x in range(3)] for x in range(10)] for x in range(20)]
+    pixels = [[[0 for _ in range(3)] for _ in range(10)] for _ in range(20)]
     draw()
 
 
@@ -277,14 +277,13 @@ def pixelStream(UDP, PORT):
     sock.bind((UDP, PORT))
     UDP_BUFFER_SIZE = 600
     while True:
-        data, addr = sock.recvfrom(UDP_BUFFER_SIZE)  # blocking call
-        pixels_in_buffer = len(data) / PIXEL_SIZE  ##600bytes = 200 pixels
-        pixels = bytearray(pixels_in_buffer * PIXEL_SIZE)  # Leeren Pixelbuffer erstellen
-        for pixel_index in range(
-                pixels_in_buffer):  # Jedes Pixel wird aus Datastream ausgelesen und ins Pixelarray ueberfuehrt
+        data, addr = sock.recvfrom(UDP_BUFFER_SIZE)
+        pixels_in_buffer = int(len(data) / PIXEL_SIZE)
+        pixels = bytearray(pixels_in_buffer * PIXEL_SIZE)
+        for pixel_index in range(pixels_in_buffer):
             pixel_to_adjust = bytearray(data[(pixel_index * PIXEL_SIZE):((pixel_index * PIXEL_SIZE) + PIXEL_SIZE)])
-            pixel_to_filter = correct_pixel_brightness(pixel_to_adjust)  # Blauwerte daempfen
-            pixels[((pixel_index) * PIXEL_SIZE):] = filter_pixel(pixel_to_filter[:], 1)  # Gamma-Koorektur anwenden
+            pixel_to_filter = correct_pixel_brightness(pixel_to_adjust)
+            pixels[((pixel_index) * PIXEL_SIZE):] = filter_pixel(pixel_to_filter[:], 1)
 
         spidev.write(pixels)
         spidev.flush()
@@ -292,34 +291,24 @@ def pixelStream(UDP, PORT):
 
 
 if __name__ == '__main__':
-    print("RGB-Tisch gestartet")
     for i in range(256):
-        gamma[i] = int(pow(float(i) / 255.0, 2.5) * 255.0)
-    print("Gamma-Korrektur vorgeladen")
+        gamma[i] = int(pow(i / 255.0, 2.5) * 255.0)
+
     pygame.mixer.pre_init(11025, -16, 2, 4096)
     pygame.init()
-    fadeIn()
+
     udpBild = [
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-         [255, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0],
-         [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-         [255, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
         [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-         [255, 0, 0]],
-        [[255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0],
-         [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-         [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
+        [[255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [0, 0, 0]],
         [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0],
-         [255, 0, 0]],
-        [[255, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0],
-         [0, 0, 0]],
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0],
-         [255, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
+        [[255, 0, 0], [0, 0, 0], [255, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
         [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
         [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
         [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
