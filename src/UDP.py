@@ -13,7 +13,7 @@ class SimonSayGame:
         pass
 
     def simon_says(self):
-        pygame.mixer.music.load("sounds/tetrisaccapella.ogg")
+        pygame.mixer.music.load("../sounds/tetrisaccapella.ogg")
         # player = subprocess.Popen(["mplayer", "tetrisklavier.mp3", "loop 0"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         pygame.mixer.music.play(-1)
 

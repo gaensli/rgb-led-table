@@ -2,7 +2,7 @@ import time
 import colorsys
 import random
 
-from lib.WS2801 import WS2801Pixels, RGB_to_color, color_to_RGB
+from src.WS2801 import WS2801Pixels, RGB_to_color
 import Adafruit_GPIO.SPI as SPI
 
 RED = [255, 0, 0]
