@@ -70,8 +70,8 @@ class SimonSayGame:
         else:
             return
 
-        for ind in temp:
-            self.display.set_pixel(ind[0], ind[1], fg_color)
+        for x, y in temp:
+            self.display.set_pixel(x, y, fg_color)
         self.display.show()
 
 
