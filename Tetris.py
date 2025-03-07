@@ -4,48 +4,102 @@ import sys, random, time
 from src.Beat import RGB_Table, RED, BLACK, GREEN, BLUE, CYAN, YELLOW, MAGENTA, ORANGE, WHITE
 
 
-class tiles:
-    # See for rotation: https://tetris.wiki/Category:Rotation_systems
-    EMPTY_TILE = [
-        [[1]],
-        [[1]],
-        [[1]],
-        [[1]],
-        BLACK
-    ]
-    I_TILE = [
-        [[0, 0, 0, 0],
-         [1, 1, 1, 1],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-        [[0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0]],
-        [[0, 0, 0, 0],
-         [1, 1, 1, 1],
-         [0, 0, 0, 0],
-         [0, 0, 0, 0]],
-        [[0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0],
-         [0, 0, 1, 0]],
-        CYAN]
-    J_TILE = [
-        [[1, 0, 0],
-         [1, 1, 1],
-         [0, 0, 0]],
-        [[0, 1, 1],
-         [0, 1, 0],
-         [0, 1, 0]],
-        [[0, 0, 0],
-         [1, 1, 1],
-         [0, 0, 1]],
-        [[0, 1, 0],
-         [0, 1, 0],
-         [1, 1, 0]],
-        BLUE]
-    L_TILE = [
+class Tetrimion:
+    def __init__(self, name:str, color: list[int]):
+        self.name = name
+        self.color = color
+        self.pixmap = None
+    
+    
+class ActiveTetrimon:
+    def __init__(self, tetrimion: Tetrimion):
+        self.tetrimion = tetrimion
+        self.coords = [0, 0]
+        self.rotation = 0
+        self.pixmap = tetrimion.pixmap[self.rotation]
+
+    def move_side(self, direction: str):
+        if direction == "left":
+            offset_y = -1
+        elif direction == "right":
+            offset_y = 1
+        else:
+            raise ValueError("direction not recognized")
+
+        if not check_move_xy_collision(target=self, offset_x=0, offset_y=offset_y):
+            self.coords[1] += offset_y
+            snd_click.play()
+
+    def rotate(self, cw: bool):
+        # cw i.e. clock-wise i.e. right turn
+        # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+        if cw:
+            next_rotation_lookup = [1, 2, 3, 0]
+        else:
+            next_rotation_lookup = [3, 0, 1, 2]
+
+        self.pixmap = self.tetrimion.pixmap[next_rotation_lookup[self.rotation]]
+        if not check_move_xy_collision(target=self, offset_x=0, offset_y=0):
+            # cw i.e. clock-wise i.e. right turn
+            # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
+            self.rotation = next_rotation_lookup[self.rotation]
+            self.pixmap = self.tetrimion.pixmap[self.rotation]
+            snd_click.play()
+        else:
+            self.pixmap = self.tetrimion.pixmap[self.rotation]
+
+    def drop_down(self):
+        while not check_move_xy_collision(target=self, offset_x=1, offset_y=0):
+            self.coords[0] += 1
+            buildScreen()
+            time.sleep(0.01)
+        fixTile()
+
+
+    def move_down(self):
+        global dropPoints
+        if not check_move_xy_collision(target=self, offset_x=1, offset_y=0):
+            self.coords[0] += 1
+            dropPoints += 1
+        else:
+            fixTile()
+
+# See for rotation: https://tetris.wiki/Category:Rotation_systems
+I_TILE = Tetrimion("I", CYAN)
+I_TILE.pixmap = [
+    [[0, 0, 0, 0],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]],
+    [[0, 0, 1, 0],
+     [0, 0, 1, 0],
+     [0, 0, 1, 0],
+     [0, 0, 1, 0]],
+    [[0, 0, 0, 0],
+     [1, 1, 1, 1],
+     [0, 0, 0, 0],
+     [0, 0, 0, 0]],
+    [[0, 0, 1, 0],
+     [0, 0, 1, 0],
+     [0, 0, 1, 0],
+     [0, 0, 1, 0]]
+]
+J_TILE = Tetrimion("J", BLUE)
+J_TILE.pixmap = [
+    [[1, 0, 0],
+     [1, 1, 1],
+     [0, 0, 0]],
+    [[0, 1, 1],
+     [0, 1, 0],
+     [0, 1, 0]],
+    [[0, 0, 0],
+     [1, 1, 1],
+     [0, 0, 1]],
+    [[0, 1, 0],
+     [0, 1, 0],
+     [1, 1, 0]]]
+L_TILE = Tetrimion("L", ORANGE)
+L_TILE.pixmap = [
         [[0, 0, 1],
          [1, 1, 1],
          [0, 0, 0]],
@@ -57,61 +111,59 @@ class tiles:
          [1, 0, 0]],
         [[1, 1, 0],
          [0, 1, 0],
-         [0, 1, 0]],
-        ORANGE]
-    O_TILE = [
-        [[1, 1],
-         [1, 1]],
-        [[1, 1],
-         [1, 1]],
-        [[1, 1],
-         [1, 1]],
-        [[1, 1],
-         [1, 1]],
-        YELLOW]
-    S_TILE = [
-        [[0, 0, 0],
-         [0, 1, 1],
-         [1, 1, 0]],
-        [[0, 1, 0],
-         [0, 1, 1],
-         [0, 0, 1]],
-        [[0, 0, 0],
-         [0, 1, 1],
-         [1, 1, 0]],
-        [[0, 1, 0],
-         [0, 1, 1],
-         [0, 0, 1]],
-        GREEN]
-    T_TILE = [
-        [[0, 1, 0],
-         [1, 1, 1],
-         [0, 0, 0]],
-        [[0, 1, 0],
-         [0, 1, 1],
-         [0, 1, 0]],
-        [[0, 0, 0],
-         [1, 1, 1],
-         [0, 1, 0]],
-        [[0, 1, 0],
-         [1, 1, 0],
-         [0, 1, 0]],
-        MAGENTA]
-    Z_TILE = [
-        [[0, 0, 0],
-         [1, 1, 0],
-         [0, 1, 1]],
-        [[0, 0, 1],
-         [0, 1, 1],
-         [0, 1, 0]],
-        [[0, 0, 0],
-         [1, 1, 0],
-         [0, 1, 1]],
-        [[0, 0, 1],
-         [0, 1, 1],
-         [0, 1, 0]],
-        RED]
-
+         [0, 1, 0]]]
+O_TILE = Tetrimion("O", YELLOW)
+O_TILE.pixmap = [
+    [[1, 1],
+     [1, 1]],
+    [[1, 1],
+     [1, 1]],
+    [[1, 1],
+     [1, 1]],
+    [[1, 1],
+     [1, 1]]]
+S_TILE = Tetrimion("S", GREEN)
+S_TILE.pixmap = [
+    [[0, 0, 0],
+     [0, 1, 1],
+     [1, 1, 0]],
+    [[0, 1, 0],
+     [0, 1, 1],
+     [0, 0, 1]],
+    [[0, 0, 0],
+     [0, 1, 1],
+     [1, 1, 0]],
+    [[0, 1, 0],
+     [0, 1, 1],
+     [0, 0, 1]]]
+T_TILE = Tetrimion("T", MAGENTA)
+T_TILE.pixmap = [
+    [[0, 1, 0],
+     [1, 1, 1],
+     [0, 0, 0]],
+    [[0, 1, 0],
+     [0, 1, 1],
+     [0, 1, 0]],
+    [[0, 0, 0],
+     [1, 1, 1],
+     [0, 1, 0]],
+    [[0, 1, 0],
+     [1, 1, 0],
+     [0, 1, 0]]]
+Z_TILE = Tetrimion("Z", RED)
+Z_TILE.pixmap = [
+    [[0, 0, 0],
+     [1, 1, 0],
+     [0, 1, 1]],
+    [[0, 0, 1],
+     [0, 1, 1],
+     [0, 1, 0]],
+    [[0, 0, 0],
+     [1, 1, 0],
+     [0, 1, 1]],
+    [[0, 0, 1],
+     [0, 1, 1],
+     [0, 1, 0]]]
 
 
 def get_blank_playfield(just_bool:bool = False):
@@ -122,9 +174,7 @@ def get_blank_playfield(just_bool:bool = False):
 
 
 ####Global variables
-activeTet = tiles.EMPTY_TILE
-activeTetCoords = [0, 0]
-activeTetRotation = 0
+activeTet : ActiveTetrimon(I_TILE)
 level = 1
 linescleared = 0
 dropPoints = 0
@@ -159,41 +209,32 @@ def fadeInOut(rgb):
 
 
 def spawn():
-    global  activeTet, activeTetRotation, activeTetCoords, dropPoints, moveTime
-    str_list = [tiles.I_TILE, tiles.O_TILE, tiles.T_TILE, tiles.S_TILE, tiles.Z_TILE, tiles.J_TILE, tiles.L_TILE]
+    global activeTet, dropPoints, moveTime
+    str_list = [I_TILE, O_TILE, T_TILE, S_TILE, Z_TILE, J_TILE, L_TILE]
     random.shuffle(str_list)
 
-    activeTet = str_list[0]
-    activeTetRotation = 0
+    activeTet = ActiveTetrimon(str_list[0])
     dropPoints = 0
-    tile_name = ""
-    if activeTet == tiles.I_TILE:
-        tile_name = "I_TILE"
-        activeTetCoords = [0, 3]
-    elif activeTet == tiles.J_TILE:
-        tile_name = "J_TILE"
-        activeTetCoords = [0, 3]
-    elif activeTet == tiles.L_TILE:
-        tile_name = "L_TILE"
-        activeTetCoords = [0, 3]
-    elif activeTet == tiles.O_TILE:
-        tile_name = "O_TILE"
-        activeTetCoords = [0, 4]
-    elif activeTet == tiles.S_TILE:
-        tile_name = "S_TILE"
-        activeTetCoords = [0, 3]
-    elif activeTet == tiles.Z_TILE:
-        tile_name = "Z_TILE"
-        activeTetCoords = [0, 3]
-    elif activeTet == tiles.T_TILE:
-        tile_name = "T_TILE"
-        activeTetCoords = [0, 3]
+    if activeTet.tetrimion.name == "I":
+        activeTet.coords = [0, 3]
+    elif activeTet.tetrimion.name == "J":
+        activeTet.coords = [0, 3]
+    elif activeTet.tetrimion.name == "L":
+        activeTet.coords = [0, 3]
+    elif activeTet.tetrimion.name == "O":
+        activeTet.coords = [0, 4]
+    elif activeTet.tetrimion.name == "S":
+        activeTet.coords = [0, 3]
+    elif activeTet.tetrimion.name == "Z":
+        activeTet.coords = [0, 3]
+    elif activeTet.tetrimion.name == "T":
+        activeTet.coords = [0, 3]
 
     moveTime = pygame.time.get_ticks()
 
-    print(f"spawned {tile_name} at {activeTetCoords}, {activeTetRotation}")
-    if check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=0, offset_y=0):
-        print(f"collision {activeTetCoords} {activeTetRotation} ")
+    print(f"spawned {activeTet}")
+    if check_move_xy_collision(target=activeTet, offset_x=0, offset_y=0):
+        print(f"collision {activeTet}")
         raise Exception("Game over")
 
 
@@ -208,66 +249,17 @@ def check_temp_vs_fixed(temp_pixels):
 
 
 def check_move_xy_collision(target, offset_x, offset_y):
-    global activeTetCoords
     temp_pixels = get_blank_playfield(just_bool=True)
-    for row in range(len(target)):
-        for col in range(len(target[row])):
-            if target[row][col]:
-                x = activeTetCoords[0] + row + offset_x
-                y = activeTetCoords[1] + col + offset_y
+    for row in range(len(target.pixmap)):
+        for col in range(len(target.pixmap[row])):
+            if target.pixmap[row][col]:
+                x = target.coords[0] + row + offset_x
+                y = target.coords[1] + col + offset_y
                 if 0 <= x < len(temp_pixels) and  0 <= y < len(temp_pixels[row]):
-                    temp_pixels[x][y] = target[row][col]
+                    temp_pixels[x][y] = True
                 else:
                     return True
     return check_temp_vs_fixed(temp_pixels)
-
-
-def move_side(direction:str):
-    if direction == "left":
-        offset_y = -1
-    elif direction == "right":
-        offset_y = 1
-    else:
-        raise ValueError("direction not recognized")
-
-    global activeTetCoords, activeTet, activeTetRotation
-    if not check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=0, offset_y=offset_y):
-        activeTetCoords[1] += offset_y
-        snd_click.play()
-
-
-def rotate(cw: bool):
-    global activeTetRotation
-    # cw i.e. clock-wise i.e. right turn
-    # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
-    if cw:
-        next_rotation_lookup = [1, 2, 3, 0]
-    else:
-        next_rotation_lookup = [3, 0, 1, 2]
-
-    if not check_move_xy_collision(target=activeTet[next_rotation_lookup[activeTetRotation]], offset_x=0, offset_y=0):
-        # cw i.e. clock-wise i.e. right turn
-        # opposite of cw is ccw i.e. counter-clock-wise i.e. left turn
-        activeTetRotation = next_rotation_lookup[activeTetRotation]
-        snd_click.play()
-
-
-def drop_down():
-    global activeTetCoords
-    while not check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=1, offset_y=0):
-        activeTetCoords[0] += 1
-        buildScreen()
-        time.sleep(0.01)
-    fixTile()
-
-
-def move_down():
-    global activeTetCoords, dropPoints
-    if not check_move_xy_collision(target=activeTet[activeTetRotation], offset_x=1, offset_y=0):
-        activeTetCoords[0] += 1
-        dropPoints += 1
-    else:
-        fixTile()
 
 
 def setLevelAndSpeed():
@@ -302,9 +294,13 @@ def checkFinishedLines():
         buildScreen()
         time.sleep(0.1)
 
+    lines_finished.reverse()
+    print(lines_finished)
+    offset = 0
     for i in lines_finished:
-        for mrow in range(i, 0, -1):
-            playfield[mrow] = playfield[mrow - 1]
+        playfield.pop(i + offset)
+        playfield.insert(0, [BLACK] * len(playfield[0]))
+        offset += 1
         snd_linekill.play()
         buildScreen()
 
@@ -326,19 +322,20 @@ def calculate_points(nof_cleared_lines: int):
 
 
 def fixTile():
-    global playfield, activeTet, activeTetRotation, activeTetCoords, dropPoints, Tetris_Points, level
+    global playfield, activeTet, dropPoints, Tetris_Points, level
 
     # Add the active tetrimino to the fixed pixels with its color
-    for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][row])):
-            if activeTet[activeTetRotation][row][col]:
-                x = activeTetCoords[0] + row
-                y = activeTetCoords[1] + col
+    for row in range(len(activeTet.pixmap)):
+        for col in range(len(activeTet.pixmap[row])):
+            if activeTet.pixmap[row][col]:
+                x = activeTet.coords[0] + row
+                y = activeTet.coords[1] + col
                 if 0 <= x < len(playfield) and 0 <= y < len(playfield[0]):
-                    playfield[x][y] = activeTet[4]
+                    playfield[x][y] = activeTet.tetrimion.color
 
+    activeTet = None
+    buildScreen()
     snd_tilefix.play()
-    activeTet = tiles.EMPTY_TILE
     nof_cleared_lines = checkFinishedLines()
     calculate_points(nof_cleared_lines)
     Tetris_Points += ((21 + (3 * level)) - dropPoints)
@@ -346,19 +343,6 @@ def fixTile():
     print(f"Lines cleared: {linescleared} - Level: {level} - moveTimeout: {moveTimeout} - Tetris Points: {Tetris_Points}")
 
     spawn()
-
-def check_playfield_for_weird():
-    global playfield
-    id_set = set()
-
-    for row in range(len(playfield)):
-        for col in range(len(playfield[row])):
-            id = id(playfield[row][col])
-            if id not in id_set:
-                id_set.add(id)
-            else:
-                print("debug this!")
-
 
 
 def getKeypress(joystick):
@@ -386,22 +370,22 @@ def getKeypress(joystick):
 
 def keyAction(pressed_key):
     if pressed_key == "UP":
-        drop_down()
+        activeTet.drop_down()
     if pressed_key == "DOWN":
-        move_down()
+        activeTet.move_down()
     if pressed_key == "RIGHT":
-        move_side("right")
+        activeTet.move_side("right")
     if pressed_key == "LEFT":
-        move_side("left")
+        activeTet.move_side("left")
     if pressed_key == "A":
-        rotate(True)
+        activeTet.rotate(True)
     if pressed_key == "B":
-        rotate(False)
+        activeTet.rotate(False)
 
 
 def buildScreen():
     # Overlay fixed and mobile Pixels
-    global playfield, activeTet, activeTetRotation, activeTetCoords
+    global playfield, activeTet
 
     for i in range(display.width):
         display.set_pixel(i, 0, WHITE)
@@ -414,14 +398,14 @@ def buildScreen():
         for col in range(len(playfield[row])):
             display.set_pixel(row + 1, col + 1, playfield[row][col])
 
-    if activeTet != tiles.EMPTY_TILE:
-        for row in range(len(activeTet[activeTetRotation])):
-            for col in range(len(activeTet[activeTetRotation][row])):
-                if activeTet[activeTetRotation][row][col]:
-                    x = activeTetCoords[0] + row + 1
-                    y = activeTetCoords[1] + col + 1
+    if activeTet is not None:
+        for row in range(len(activeTet.pixmap)):
+            for col in range(len(activeTet.pixmap[row])):
+                if activeTet.pixmap[row][col]:
+                    x = activeTet.coords[0] + row + 1
+                    y = activeTet.coords[1] + col + 1
                     if 0 <= x < display.width and 0 <= y < display.height:
-                        display.set_pixel(x, y, activeTet[4])
+                        display.set_pixel(x, y, activeTet.tetrimion.color)
     display.show()
 
 
@@ -493,7 +477,7 @@ if __name__ == '__main__':
                 keyAction(key_press)
                 keyTime = pygame.time.get_ticks()
             if pygame.time.get_ticks() > moveTime + moveTimeout:
-                move_down()
+                activeTet.move_down()
                 moveTime = pygame.time.get_ticks()
 
             buildScreen()
@@ -502,12 +486,11 @@ if __name__ == '__main__':
             time.sleep(0.01)
 
     except Exception as e:
-        pass
+        print(e)
 
     pygame.mixer.music.stop()
     snd_gameover.play()
     time.sleep(0.1)
     fadeInOut(RED)
     print(f"Game over! {Tetris_Points} points.")
-
     print("Tetris ended.")
