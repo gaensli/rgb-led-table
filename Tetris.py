@@ -765,6 +765,8 @@ def getKeypress(u):
 
 # Overlay fixed and mobile Pixels
 def buildScreen():
+    global running, fixedPixels, activeTet, activeTetRotation, activeTetCoords
+
     if running:
         for row in range(24):
             for pixel in range(12):
