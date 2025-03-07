@@ -1,34 +1,19 @@
 import pygame, pickle
-import math, sys, os, random, socket, time, colorsys
+import sys, random, time
+
+from src.Beat import RGB_Table, RED, BLACK, WHITE, GREEN, BLUE, CYAN, YELLOW, MAGENTA
 
 
-class bcolors:
-    ANSI_RED = '\033[91m'
-    ANSI_GREEN = '\033[92m'
-    ANSI_BLUE = '\033[94m'
-    ANSI_CYAN = '\033[96m'
-    ANSI_WHITE = '\033[97m'
-    ANSI_YELLOW = '\033[93m'
-    ANSI_MAGENTA = '\033[95m'
-    ANSI_GREY = '\033[90m'
-    ANSI_BLACK = '\033[90m'
-    ENDC = '\033[0m'
-
-
-# os.system('cls' if os.name=='nt' else 'clear')
-
-
-####Constants
 class gamecolors:
-    I_COLOR = [0, 255, 255]
-    J_COLOR = [0, 0, 255]
+    I_COLOR = CYAN
+    J_COLOR = BLUE
     L_COLOR = [255, 80, 0]
-    O_COLOR = [255, 255, 0]
-    S_COLOR = [0, 255, 0]
-    T_COLOR = [255, 0, 255]
-    Z_COLOR = [255, 0, 0]
-    BACKGROUNDCOLOR = [0, 0, 0]
-    TEXTCOLOR = [255, 255, 255]
+    O_COLOR = YELLOW
+    S_COLOR = GREEN
+    T_COLOR = MAGENTA
+    Z_COLOR = RED
+    BG_COLOR = BLACK
+    TEXTCOLOR = WHITE
 
 
 class tiles:
@@ -119,9 +104,9 @@ activeTetRotation = 0
 level = 1
 linescleared = 0
 dropPoints = 0
-fixedPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(26)]
-movingPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(26)]
-displayPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(24)]
+fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(26)]
+movingPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(26)]
+displayPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
 keyPressTimeout = 125
 keyPressTime = 0
 keyTimeout = 150
@@ -133,69 +118,26 @@ Tetris_Points = 0
 running = False
 paused = False
 lastPressed = "NONE"
-spidev = file("/dev/spidev0.0", "wb")
 
 
-# def draw(matrix):
-#	for row in range (0,len(matrix)):
-#		if row <=9:
-#			print " " + str(row) + " [",
-#		else:
-#			print str(row) + " [",
-#
-#		for col in range(10):
-#			if str(matrix[row][col]) =="0" or  str(matrix[row][col]) =="[0, 0, 0]":
-#				print bcolors.ANSI_RED + "X" + bcolors.ENDC,
-#			else:
-#				print bcolors.ANSI_BLUE + "O" + bcolors.ENDC,
-#		print "]"
+def fadeInOut(rgb):
+    display.brightness = 0.0
+    display.fill(rgb)
+    display.wait_time = 0.01
 
-def draw(pixels):
-    for row in range(12):
-        if row % 2 == 0:
-            for pixel in range(0, 24):
-                for col in range(0, 3):
-                    c = int(pixels[pixel][row][col] * brightness)
-                    spidev.write(chr(c & 0xFF))
-        else:
-            for pixel in range(23, -1, -1):
-                for col in range(0, 3):
-                    c = int(pixels[pixel][row][col] * brightness)
-                    spidev.write(chr(c & 0xFF))
-    spidev.flush()
+    while display.brightness < 1.0:
+        display.brightness += 0.01
+        display.show()
+        display.wait()
 
+    while display.brightness > 0.0:
+        display.brightness -= 0.01
+        display.show()
+        display.wait()
 
-# def draw(matrix):
-#	sendstring = ""
-#	for row in range(20):
-#		if row%2==0:
-#			for pixel in range(0,10):
-#				for color in range(0,3):
-#					c=int(matrix[row][pixel][color]*brightness)
-#					sendstring += chr(c & 0xFF)
-#		else:
-#			for pixel in range(9,-1,-1):
-#				for color in range(0,3):
-#					c=int(matrix[row][pixel][color]*brightness)
-#					sendstring += chr(c & 0xFF)
-#	spidev.write(sendstring)
-#	spidev.flush()
-#	time.sleep(0.001)
-
-def fadeInOut(c):
-    global displayPixels
-    global brightness
-    brightness = 0
-    displayPixels = [[c for x in range(12)] for x in range(24)]
-    while brightness < 1.0:
-        draw(displayPixels)
-        brightness += 0.05
-    while brightness > 0.0:
-        draw(displayPixels)
-        brightness -= 0.05
-    displayPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(24)]
-    brightness = 1.0
-    draw(displayPixels)
+    display.fill(gamecolors.BG_COLOR)
+    display.brightness = 1.0
+    display.show()
 
 
 # Shuffle the next bag of Tetronimos
@@ -216,7 +158,7 @@ def checkSpawn():
     for row in range(26):
         for col in range(12):
             if tempPixels[row][col] == 1:
-                if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                if fixedPixels[row][col] != gamecolors.BG_COLOR:
                     return True
     return False
 
@@ -231,9 +173,9 @@ def resetGame():
     linescleared = 0
     dropPoints = 0
     level = 1
-    fixedPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(26)]
-    movingPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(26)]
-    displayPixels = [[gamecolors.BACKGROUNDCOLOR for x in range(12)] for x in range(24)]
+    fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
+    movingPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
+    displayPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
     keyPressTimeout = 150
     keyPressTime = 0
     keyTimeout = 100
@@ -287,7 +229,7 @@ def checkMoveLeftCollision():
     for row in range(26):
         for col in range(12):
             if tempPixels[row][col] == 1:
-                if fixedPixels[row][col - 1] != gamecolors.BACKGROUNDCOLOR:
+                if fixedPixels[row][col - 1] != gamecolors.BG_COLOR:
                     return True
     return False
 
@@ -305,7 +247,7 @@ def checkMoveRightCollision():
     for row in range(26):
         for col in range(12):
             if tempPixels[row][col] == 1:
-                if fixedPixels[row][col + 1] != gamecolors.BACKGROUNDCOLOR:
+                if fixedPixels[row][col + 1] != gamecolors.BG_COLOR:
                     return True
     return False
 
@@ -329,8 +271,8 @@ def gameOver():
     snd_gameover.play()
     time.sleep(3)
     fadeInOut([255, 0, 0])
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-    sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
+    # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+    # sock.sendto(str(Tetris_Points), ("192.168.0.241", 56565))
     entry = (playerName, Tetris_Points)
     hiScores.append(entry)
     hiScores.sort(key=getKey, reverse=True)
@@ -354,7 +296,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 3
@@ -372,7 +314,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 2
@@ -390,7 +332,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 1
@@ -408,7 +350,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 0
@@ -428,7 +370,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 3
@@ -446,7 +388,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 2
@@ -464,7 +406,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 1
@@ -482,7 +424,7 @@ def rotateLeft():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 0
@@ -510,7 +452,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 1
@@ -528,7 +470,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 2
@@ -546,7 +488,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 3
@@ -564,7 +506,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 0
@@ -584,7 +526,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 1
@@ -602,7 +544,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 2
@@ -620,7 +562,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 3
@@ -638,7 +580,7 @@ def rotateRight():
                 for row in range(26):
                     for col in range(12):
                         if tempPixels[row][col] == 1:
-                            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                                 validMove = False
             if validMove:
                 activeTetRotation = 0
@@ -696,7 +638,7 @@ def checkMoveDownCollision():
     for row in range(26):
         for col in range(12):
             if tempPixels[row][col] == 1:
-                if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+                if fixedPixels[row][col] != gamecolors.BG_COLOR:
                     return True
     return False
 
@@ -724,12 +666,12 @@ def checkFinishedLines():
     for row in range(26):
         counter = 0
         for col in range(12):
-            if fixedPixels[row][col] != gamecolors.BACKGROUNDCOLOR:
+            if fixedPixels[row][col] != gamecolors.BG_COLOR:
                 counter += 1
         if counter == 12:
             linesFinished += 1
             for col in range(12):
-                fixedPixels[row][col] = gamecolors.BACKGROUNDCOLOR
+                fixedPixels[row][col] = gamecolors.BG_COLOR
             buildScreen()
             for mrow in range(row, 0, -1):
                 for mcol in range(12):
@@ -823,13 +765,13 @@ def buildScreen():
     if running:
         for row in range(24):
             for pixel in range(12):
-                displayPixels[row][pixel] = fixedPixels[row + 2][pixel]
+                display.set_pixel(row, pixel, fixedPixels[row + 2][pixel])
         if activeTet != None:
             for row in range(len(activeTet[activeTetRotation])):
                 for col in range(len(activeTet[activeTetRotation][0])):
                     if activeTet[activeTetRotation][row][col]:
-                        displayPixels[activeTetCoords[0] - 2 + row][activeTetCoords[1] + col] = activeTet[4]
-        draw(displayPixels)
+                        display.set_pixel(activeTetCoords[0] - 2 + row, activeTetCoords[1] + col, activeTet[4])
+        display.show()
 
 
 def getKey(item):
@@ -838,48 +780,56 @@ def getKey(item):
 
 # Main loop to control the game
 if __name__ == '__main__':
-    print("Initialize sound system..."),
+    display = RGB_Table()
+
+    print("Initialize sound system...", end=""),
     pygame.mixer.pre_init(44100, -16, 2, 2048)
     pygame.init()
-    print("done")
-    print("Loading music..."),
+    print("done!")
+
+    print("Loading music...", end=""),
     pygame.mixer.music.load('/home/pi/rgb-led-table/sounds/tetrisaccapella.ogg')
     pygame.mixer.music.set_volume(0.4)
-    print("done")
-    print("Loading SFX..."),
+    print("done!")
+
+    print("Loading SFX...", end=""),
     snd_click = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/click.ogg')
     snd_linekill = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/linekill.ogg')
     snd_tilefix = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/tilefix.ogg')
     snd_pause = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/pause.ogg')
     snd_gameover = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/gameover.ogg')
     snd_level = pygame.mixer.Sound('/home/pi/rgb-led-table/sounds/level.ogg')
-    print("done")
+    print("done!")
+
     pygame.mixer.music.play(-1)
 
     joystick_count = pygame.joystick.get_count()
     if joystick_count == 0:
         print("How do you want to play Tetris without a joystick?")
         sys.exit()
-    else:
-        j = pygame.joystick.Joystick(0)
-        j.init()
-        print
-        'Initialized Joystick : %s' % j.get_name()
-    print("Loading Hiscores..."),
-    #    hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
-    #    hiScores.sort(key=getKey, reverse=True)
-    print("done")
-    #    print("Aktueller Hiscore: " + str(hiScores[0][1]) + " Punkte von " + str(hiScores[0][0]))
-    #    if len(sys.argv) > 1:
+
+    j = pygame.joystick.Joystick(0)
+    j.init()
+    print(f'Initialized Joystick : {j.get_name()}')
+
+    print("Loading Hiscores...", end=""),
+    # hiScores = pickle.load(open("/home/pi/rgb-led-table/hiscores.zfl", "rb"))
+    # hiScores.sort(key=getKey, reverse=True)
+    print("done!")
+    # print("Aktueller Hiscore: " + str(hiScores[0][1]) + " Punkte von " + str(hiScores[0][0]))
+    #  if len(sys.argv) > 1:
     #        playerName = sys.argv[1]
     #        print("Hi " + playerName + ", good luck!")
+
     print("Game of Tetris started!")
-    fadeInOut([255, 255, 255])
+    fadeInOut([128, 128, 128])
+
     running = True
     spawn()
     moveTime = pygame.time.get_ticks()
     keyTime = moveTime
     keyPressTime = moveTime
+
     while running:
         if paused:
             time.sleep(1)
