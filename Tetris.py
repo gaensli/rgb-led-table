@@ -139,15 +139,14 @@ def fadeInOut(rgb):
     display.show()
 
 
-# Shuffle the next bag of Tetronimos
 def shuffleSeq():
     str_list = [tiles.I_TILE, tiles.O_TILE, tiles.T_TILE, tiles.S_TILE, tiles.Z_TILE, tiles.J_TILE, tiles.L_TILE]
     random.shuffle(str_list)
     return str_list
 
 
-# Check if new spawned Tetromino overlaps the current fixedPixels
 def checkSpawn():
+    # Check if new spawned Tetromino overlaps the current fixedPixels
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords
     tempPixels = [[0 for x in range(12)] for x in range(26)]
     for row in range(len(activeTet[activeTetRotation])):
@@ -162,7 +161,6 @@ def checkSpawn():
     return False
 
 
-# Spawn a new Tetromino
 def resetGame():
     global rndSeq, activeTet, activeTetCoords, activeTetRotation, fixedPixels, movingPixels, displayPixels, keyTimeout, keyTime, moveTimeout, moveTime, brightness, running, Tetris_Points, level, keyPressTime, keyPressTimeout, linescleared, dropPoints
     rndSeq = []
@@ -262,7 +260,6 @@ def moveLeft():
     snd_click.play()
 
 
-# Player is gameover
 def gameOver():
     print(f"Game over! {Tetris_Points} points.")
     pygame.mixer.music.stop()
@@ -281,7 +278,6 @@ def gameOver():
     pickle.dump(hiScores, open("/home/pi/rgb-led-table/hiscores.zfl", "wb"))
 
 
-# Teil nach links drehen
 def rotateLeft():
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
     if activeTet == tiles.I_TILE:
@@ -437,7 +433,6 @@ def rotateLeft():
     snd_click.play()
 
 
-# Teil nach rechts drehen
 def rotateRight():
     global fixedPixels, activeTet, activeTetCoords, activeTetRotation
     if activeTet == tiles.I_TILE:
@@ -593,7 +588,6 @@ def rotateRight():
     snd_click.play()
 
 
-# Process inputs
 def keyAction(pressed_key):
     global paused, keyPressTime
 
@@ -721,8 +715,8 @@ def dropDown():
     fixTile()
 
 
-# Let gravity pull the mobile pixels down
 def timeAction():
+    # Let gravity pull the mobile pixels down
     global activeTetCoords, dropPoints
     if checkMoveDownCollision():
         fixTile()
@@ -764,8 +758,8 @@ def getKeypress(joystick):
     return key_pressed
 
 
-# Overlay fixed and mobile Pixels
 def buildScreen():
+    # Overlay fixed and mobile Pixels
     global running, fixedPixels, activeTet, activeTetRotation, activeTetCoords
 
     if running:
@@ -780,9 +774,6 @@ def buildScreen():
         display.show()
 
 
-
-
-# Main loop to control the game
 if __name__ == '__main__':
     display = RGB_Table()
 
