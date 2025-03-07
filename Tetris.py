@@ -97,8 +97,6 @@ level = 1
 linescleared = 0
 dropPoints = 0
 fixedPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(26)]
-movingPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(26)]
-displayPixels = [[gamecolors.BG_COLOR for x in range(12)] for x in range(24)]
 keyPressTimeout = 125
 keyPressTime = 0
 keyTimeout = 150
@@ -142,7 +140,7 @@ def checkSpawn():
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords
     tempPixels = [[0 for x in range(12)] for x in range(26)]
     for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][0])):
+        for col in range(len(activeTet[activeTetRotation][row])):
             if activeTet[activeTetRotation][row][col]:
                 tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
     for row in range(26):
@@ -194,16 +192,13 @@ def check_move_collision(direction:str):
     tempPixels = [[0 for x in range(12)] for x in range(26)]
     for row in range(len(activeTet[activeTetRotation])):
         for col in range(len(activeTet[activeTetRotation][0])):
-            if activeTet[activeTetRotation][row][col]:
-                tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = 1
+            tempPixels[activeTetCoords[0] + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
 
-    for row in range(26):
-        if tempPixels[row][edge] == 1:
+    for row in range(len(tempPixels)):
+        if tempPixels[row][edge]:
             return True
-
-    for row in range(26):
-        for col in range(12):
-            if tempPixels[row][col] == 1:
+        for col in range(len(tempPixels[row])):
+            if tempPixels[row][col]:
                 if fixedPixels[row][col + offset] != gamecolors.BG_COLOR:
                     return True
 
@@ -608,15 +603,13 @@ def checkMoveDownCollision():
     global fixedPixels, activeTet, activeTetRotation, activeTetCoords
     tempPixels = [[0 for x in range(12)] for x in range(27)]  # hib
     for row in range(len(activeTet[activeTetRotation])):
-        for col in range(len(activeTet[activeTetRotation][0])):
-            if activeTet[activeTetRotation][row][col]:
-                tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = 1
-    for col in range(0, 12):
-        if tempPixels[26][col] == 1:
-            return True
+        for col in range(len(activeTet[activeTetRotation][row])):
+            tempPixels[activeTetCoords[0] + 1 + row][activeTetCoords[1] + col] = activeTet[activeTetRotation][row][col]
+    if any(tempPixels[26]):
+        return True
     for row in range(26):
         for col in range(12):
-            if tempPixels[row][col] == 1:
+            if tempPixels[row][col]:
                 if fixedPixels[row][col] != gamecolors.BG_COLOR:
                     return True
     return False
@@ -642,18 +635,12 @@ def checkFinishedLines():
     global fixedPixels, Tetris_Points, linescleared, level
     linesFinished = 0
     for row in range(26):
-        counter = 0
-        for col in range(12):
-            if fixedPixels[row][col] != gamecolors.BG_COLOR:
-                counter += 1
-        if counter == 12:
+        if all(map(lambda x: x != gamecolors.BG_COLOR, fixedPixels[row])):
             linesFinished += 1
-            for col in range(12):
-                fixedPixels[row][col] = gamecolors.BG_COLOR
+            fixedPixels[row] = [gamecolors.BG_COLOR] * 12
             buildScreen()
             for mrow in range(row, 0, -1):
-                for mcol in range(12):
-                    fixedPixels[mrow][mcol] = fixedPixels[mrow - 1][mcol]
+                fixedPixels[mrow] = fixedPixels[mrow - 1]
             snd_linekill.play()
             buildScreen()
 
@@ -738,9 +725,10 @@ def buildScreen():
     global running, fixedPixels, activeTet, activeTetRotation, activeTetCoords
 
     if running:
-        for row in range(24):
-            for pixel in range(12):
-                display.set_pixel(row, pixel, fixedPixels[row + 2][pixel])
+        for row in range(display.width):
+            for col in range(display.height):
+                display.set_pixel(row, col, fixedPixels[row + 2][col])
+
         if activeTet is not None:
             for row in range(len(activeTet[activeTetRotation])):
                 for col in range(len(activeTet[activeTetRotation][0])):
