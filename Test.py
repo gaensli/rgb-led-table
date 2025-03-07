@@ -42,11 +42,11 @@ def show_digit(position, digit, color):
               [0, 0, 1],
               [0, 0, 1],
               [0, 0, 1]],
-        '2': [[0, 1, 1],
+        '2': [[1, 1, 1],
               [0, 0, 1],
-              [0, 0, 1],
-              [0, 0, 1],
-              [0, 0, 1]],
+              [1, 1, 1],
+              [1, 0, 0],
+              [1, 1, 1]],
         '3': [[1, 1, 1],
               [0, 0, 1],
               [0, 1, 1],
@@ -58,7 +58,7 @@ def show_digit(position, digit, color):
               [0, 0, 1],
               [0, 0, 1]],
         '5': [[1, 1, 1],
-              [1, 0, 1],
+              [1, 0, 0],
               [1, 1, 1],
               [0, 0, 1],
               [1, 1, 1]],
@@ -107,11 +107,12 @@ def time_display():
         for pos, digit in enumerate(timestring[0:4]):
             show_digit(pos, digit, fg_color)
 
-        if int(timestring[5]) % 2 == 0:
+        seconds = now.tm_sec
+        if seconds % 2 == 0:
             show_dots(fg_color)
 
         pixels.show()
-        time.sleep(1)
+        time.sleep(0.1)
 
 
 def fade_in_out():
