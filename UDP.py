@@ -18,16 +18,15 @@ class SimonSayGame:
         # player = subprocess.Popen(["mplayer", "tetrisklavier.mp3", "loop 0"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         pygame.mixer.music.play(-1)
 
-        sleeptime = 0.5
+        sleeptime = 1
         self.display.fill(BLACK)
         self.display.show()
         for color in ['yellow', 'red', 'green', 'blue']:
             self.simon_show_color(color, True)
             time.sleep(sleeptime)
+        for color in ['yellow', 'red', 'green', 'blue']:
             self.simon_show_color(color, False)
             time.sleep(sleeptime)
-
-        fade_in(display, GREEN)
         self.display.fill(BLACK)
 
     def simon_show_color(self, color: str, mode: bool):
@@ -38,10 +37,10 @@ class SimonSayGame:
             'yellow': YELLOW
         }
         blocks = {
-            'yellow': [[5, 3], [8, 6]],
-            'red': [[8, 7], [11, 10]],
-            'green': [[11, 3], [14, 6]],
-            'blue': [[8, 0],[11, 3]],
+            'yellow': [[6, 4], [9, 7]],
+            'red': [[10, 8], [13, 11]],
+            'green': [[14, 4], [17, 7]],
+            'blue': [[10, 0],[13, 3]],
         }
 
         if color in blocks and color in colors:
