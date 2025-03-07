@@ -5,6 +5,7 @@ from src.Beat import RGB_Table, RED, BLACK, GREEN, BLUE, CYAN, YELLOW, MAGENTA, 
 
 
 class tiles:
+    # See for rotation: https://tetris.wiki/Category:Rotation_systems
     EMPTY_TILE = [
         [[1]],
         [[1]],
