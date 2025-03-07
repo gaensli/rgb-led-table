@@ -5,15 +5,7 @@ from src.Beat import RGB_Table, RED, BLACK, WHITE, GREEN, BLUE, CYAN, YELLOW, MA
 
 
 class gamecolors:
-    I_COLOR = CYAN
-    J_COLOR = BLUE
-    L_COLOR = [255, 80, 0]
-    O_COLOR = YELLOW
-    S_COLOR = GREEN
-    T_COLOR = MAGENTA
-    Z_COLOR = RED
     BG_COLOR = BLACK
-    TEXTCOLOR = WHITE
 
 
 class tiles:
@@ -27,7 +19,7 @@ class tiles:
                [1],
                [1],
                [1]],
-              gamecolors.I_COLOR]
+              CYAN]
     J_TILE = [[[1, 0, 0],
                [1, 1, 1]],
               [[1, 1],
@@ -38,7 +30,7 @@ class tiles:
               [[0, 1],
                [0, 1],
                [1, 1]],
-              gamecolors.J_COLOR]
+              BLUE]
     L_TILE = [[[0, 0, 1],
                [1, 1, 1]],
               [[1, 0],
@@ -49,7 +41,7 @@ class tiles:
               [[1, 1],
                [0, 1],
                [0, 1]],
-              gamecolors.L_COLOR]
+              [255, 80, 0]]
     O_TILE = [[[1, 1],
                [1, 1]],
               [[1, 1],
@@ -58,7 +50,7 @@ class tiles:
                [1, 1]],
               [[1, 1],
                [1, 1]],
-              gamecolors.O_COLOR]
+              YELLOW]
     S_TILE = [[[0, 1, 1],
                [1, 1, 0]],
               [[1, 0],
@@ -69,7 +61,7 @@ class tiles:
               [[1, 0],
                [1, 1],
                [0, 1]],
-              gamecolors.S_COLOR]
+              GREEN]
     T_TILE = [[[0, 1, 0],
                [1, 1, 1]],
               [[1, 0],
@@ -80,7 +72,7 @@ class tiles:
               [[0, 1],
                [1, 1],
                [0, 1]],
-              gamecolors.T_COLOR]
+              MAGENTA]
     Z_TILE = [[[1, 1, 0],
                [0, 1, 1]],
               [[0, 1],
@@ -91,7 +83,7 @@ class tiles:
               [[0, 1],
                [1, 1],
                [1, 0]],
-              gamecolors.Z_COLOR]
+              RED]
 
 
 ####Global variables
