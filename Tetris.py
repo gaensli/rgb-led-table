@@ -529,4 +529,8 @@ if __name__ == '__main__':
                 moveTime = pygame.time.get_ticks()
         if running:
             buildScreen()
+
+        # Throttle down CPU load...
+        time.sleep(0.01)
+
     print("Tetris ended.")
