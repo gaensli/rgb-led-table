@@ -150,7 +150,7 @@ def rainbow_colors(display):
         display.show()
         display.wait()
 
-def brightness_decrease(display, step=1):
+def rgb_decrease(display, step=1):
     for j in range(int(256 // step)):
         for i in range(len(display)):
             r, g, b = display.pixels.get_pixel_rgb(i)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
     # rainbow_cycle_successive(display)
     # rainbow_cycle(display)
     # rainbow_colors(display)
-    # brightness_decrease(display)
+    # rgb_decrease(display)
     # color_chase(display)
     # fade_in_out(display)
 
